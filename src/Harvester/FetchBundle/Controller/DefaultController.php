@@ -9,11 +9,21 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 class DefaultController extends Controller
 {
     /**
-     * @Route("/")
+     * @Route("/{user_id}")
      * @Template()
      */
-    public function indexAction()
+    public function indexAction($user_id = NULL)
     {
-        return array();
+        $entries = array();
+        if (!empty($user_id))
+        {
+            $user = $this->getDoctrine()->getRepository('HarvesterFetchBundle:User')->find($user_id);
+
+            $entries = $user->getEntries();
+        }
+        return array(
+            'user' => $user,
+            'entries' =>$entries,
+        );
     }
 }
