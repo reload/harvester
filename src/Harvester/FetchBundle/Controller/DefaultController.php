@@ -14,7 +14,8 @@ class DefaultController extends Controller
      */
     public function indexAction($user_id = NULL)
     {
-        $entries = array();
+        $entries = $user = array();
+
         if (!empty($user_id))
         {
             $user = $this->getDoctrine()->getRepository('HarvesterFetchBundle:User')->find($user_id);
