@@ -3,6 +3,7 @@
 namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
+use Harvester\FetchBundle\Entity\User;
 use Harvest_Result;
 use Harvest_DayEntry;
 use DateTime;
@@ -27,20 +28,21 @@ class EntryRepository extends EntityRepository
                 $this->saveEntry($entry, $user_entry);
                 $output->writeln('<info>created.</info>');
             }
-            else{
+            else
+            {
                 $output->writeln('<comment>not created.</comment>');
             }
-
         }
     }
 
     public function saveEntry(Entry $entry, Harvest_DayEntry $harvest_entry)
     {
+        $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($harvest_entry->get('user-id'));
 
         $entry->setEntryId($harvest_entry->get('id'));
         $entry->setProjectId($harvest_entry->get('project-id'));
         $entry->setTaskId($harvest_entry->get('task-id'));
-        $entry->setUserId($harvest_entry->get('user-id'));
+        $entry->setUser($user);
         $entry->setNotes($harvest_entry->get('notes'));
         $entry->setHours($harvest_entry->get('hours'));
         $entry->setIsClosed($harvest_entry->get('is-closed') == 'true' ? 1 : 0);

@@ -18,16 +18,8 @@ class User
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="harvest_id", type="integer")
-     */
-    private $harvestId;
 
     /**
      * @var string
@@ -86,7 +78,7 @@ class User
     private $createdAt;
 
     /**
-     * @ORM\OneToMany(targetEntity="Entry", mappedBy="user")
+     * @ORM\OneToMany(targetEntity="Harvester\FetchBundle\Entity\Entry", mappedBy="user")
      */
     protected $entries;
 
@@ -98,37 +90,28 @@ class User
         $this->entries = new ArrayCollection();
     }
 
-    /**
-     * Get id
-     *
-     * @return integer 
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
 
     /**
-     * Set harvestId
+     * Set id
      *
-     * @param integer $harvestId
+     * @param integer $id
      * @return User
      */
-    public function setHarvestId($harvestId)
+    public function setId($id)
     {
-        $this->harvestId = $harvestId;
+        $this->id = $id;
 
         return $this;
     }
 
     /**
-     * Get harvestId
+     * Get id
      *
      * @return integer
      */
-    public function getHarvestId()
+    public function getId()
     {
-        return $this->harvestId;
+        return $this->id;
     }
 
     /**

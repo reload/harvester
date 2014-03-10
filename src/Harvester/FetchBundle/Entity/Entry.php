@@ -43,13 +43,6 @@ class Entry
     private $taskId;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="user_id", type="integer")
-     */
-    private $userId;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="notes", type="text")
@@ -106,8 +99,8 @@ class Entry
     private $createdAt;
 
     /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="entries")
-     * @ORM\JoinColumn(name="user_id", referencedColumnName="harvestId")
+     * @ORM\ManyToOne(targetEntity="Harvester\FetchBundle\Entity\User", inversedBy="entries")
+     * @ORM\JoinColumn(name="fk_user_id", referencedColumnName="id")
      */
     protected $user;
 
@@ -400,10 +393,10 @@ class Entry
     /**
      * Set user
      *
-     * @param \Harvester\FetchBundle\Entity\Entry $user
+     * @param \Harvester\FetchBundle\Entity\User $user
      * @return Entry
      */
-    public function setUser(\Harvester\FetchBundle\Entity\Entry $user = null)
+    public function setUser(\Harvester\FetchBundle\Entity\User $user = null)
     {
         $this->user = $user;
 
@@ -413,7 +406,7 @@ class Entry
     /**
      * Get user
      *
-     * @return \Harvester\FetchBundle\Entity\Entry 
+     * @return \Harvester\FetchBundle\Entity\User
      */
     public function getUser()
     {

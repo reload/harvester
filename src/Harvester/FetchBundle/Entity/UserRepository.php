@@ -22,7 +22,7 @@ class UserRepository extends EntityRepository
      */
     public function registerUser(Harvest_User $harvest_user, $output)
     {
-        $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneByHarvestId($harvest_user->id);
+        $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($harvest_user->id);
 
         if (!$user)
         {
@@ -55,7 +55,7 @@ class UserRepository extends EntityRepository
      */
     public function saveUser(User $user, Harvest_User $harvest_user)
     {
-        $user->setHarvestId($harvest_user->id);
+        $user->setId($harvest_user->id);
         $user->setFirstName($harvest_user->get('first-name'));
         $user->setLastName($harvest_user->get('last-name'));
         $user->setEmail($harvest_user->get('email'));
