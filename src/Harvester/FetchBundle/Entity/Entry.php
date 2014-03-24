@@ -17,23 +17,8 @@ class Entry
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="entry_id", type="integer")
-     */
-    private $entryId;
-
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="project_id", type="integer")
-     */
-    private $projectId;
 
     /**
      * @var integer
@@ -105,6 +90,25 @@ class Entry
     protected $user;
 
     /**
+     * @ORM\ManyToOne(targetEntity="Harvester\FetchBundle\Entity\Project", inversedBy="entries")
+     * @ORM\JoinColumn(name="fk_project_id", referencedColumnName="id")
+     */
+    protected $project;
+
+    /**
+     * Set id
+     *
+     * @param integer $id
+     * @return Entry
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
      * Get id
      *
      * @return integer 
@@ -112,52 +116,6 @@ class Entry
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Set entryId
-     *
-     * @param integer $entryId
-     * @return Entry
-     */
-    public function setEntryId($entryId)
-    {
-        $this->entryId = $entryId;
-
-        return $this;
-    }
-
-    /**
-     * Get entryId
-     *
-     * @return integer 
-     */
-    public function getEntryId()
-    {
-        return $this->entryId;
-    }
-
-    /**
-     * Set projectId
-     *
-     * @param integer $projectId
-     * @return Entry
-     */
-    public function setProjectId($projectId)
-    {
-        $this->projectId = $projectId;
-
-        return $this;
-    }
-
-    /**
-     * Get projectId
-     *
-     * @return integer 
-     */
-    public function getProjectId()
-    {
-        return $this->projectId;
     }
 
     /**
@@ -411,5 +369,28 @@ class Entry
     public function getUser()
     {
         return $this->user;
+    }
+
+    /**
+     * Set project
+     *
+     * @param \Harvester\FetchBundle\Entity\Project $project
+     * @return Entry
+     */
+    public function setProject(\Harvester\FetchBundle\Entity\Project $project = null)
+    {
+        $this->project = $project;
+
+        return $this;
+    }
+
+    /**
+     * Get project
+     *
+     * @return \Harvester\FetchBundle\Entity\Project 
+     */
+    public function getProject()
+    {
+        return $this->project;
     }
 }
