@@ -3,7 +3,8 @@
 namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
-
+use Harvest_Client;
+use DateTime;
 /**
  * ClientRepository
  *
@@ -12,4 +13,52 @@ use Doctrine\ORM\EntityRepository;
  */
 class ClientRepository extends EntityRepository
 {
+    public function registerClient($harvest_clients, $output)
+    {
+        foreach ($harvest_clients->get('data') as $harvest_client)
+        {
+            $client = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Client')->findOneById($harvest_client->get('id'));
+
+            if (!$client)
+            {
+                $client = new Client();
+                $this->saveClient($client, $harvest_client);
+                $output->writeln('<info>' . $harvest_client->get('name') . '<info> <comment>created.</comment>');
+            }
+            else
+            {
+                $client_last_update = new DateTime($harvest_client->get('updated-at'));
+
+                if ($client->getUpdatedAt()->getTimestamp() < $client_last_update->getTimestamp()-3600)
+                {
+                    $this->saveClient($client, $harvest_client);
+                    $output->writeln('<info>'.$harvest_client->name. ' have been updated.</info>');
+                }
+                else
+                {
+                    $output->writeln('<comment>'.$harvest_client->name . ' is up to date.</comment>');
+                }
+
+            }
+        }
+    }
+
+    public function saveClient(Client $client, Harvest_Client $harvest_client)
+    {
+        $client->setId($harvest_client->get('id'));
+        $client->setName($harvest_client->get('name'));
+        $client->setActive($harvest_client->get('active') == 'false' ? 0 : 1);
+        $client->setCurrency($harvest_client->get('currency'));
+        $client->setCurrencySymbol($harvest_client->get('currency-symbol'));
+        $client->setDetails($harvest_client->get('details'));
+        $client->setLastInvoiceKind($harvest_client->get('last-invoice-kind'));
+        $client->setUpdatedAt(new DateTime($harvest_client->get('updated-at')));
+        $client->setCreatedAt(new DateTime($harvest_client->get('created-at')));
+        $client->setDefaultInvoiceTimeframe($harvest_client->get('default-invoice-timeframe'));
+
+        $em = $this->getEntityManager();
+        $em->persist($client);
+        $em->flush();
+
+    }
 }
