@@ -4,6 +4,7 @@ namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
 use Harvester\FetchBundle\Entity\User;
+use Harvester\FetchBundle\Entity\Project;
 use Harvest_Result;
 use Harvest_DayEntry;
 use DateTime;
@@ -20,7 +21,7 @@ class EntryRepository extends EntityRepository
     {
         foreach ($user_entries->get('data') as $user_entry)
         {
-            $entry = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Entry')->findOneByEntryId($user_entry->get('id'));
+            $entry = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Entry')->findOneById($user_entry->get('id'));
 
             if (!$entry)
             {
@@ -38,11 +39,12 @@ class EntryRepository extends EntityRepository
     public function saveEntry(Entry $entry, Harvest_DayEntry $harvest_entry)
     {
         $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($harvest_entry->get('user-id'));
+        $project = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Project')->findOneById($harvest_entry->get('project-id'));
 
-        $entry->setEntryId($harvest_entry->get('id'));
-        $entry->setProjectId($harvest_entry->get('project-id'));
+        $entry->setId($harvest_entry->get('id'));
         $entry->setTaskId($harvest_entry->get('task-id'));
         $entry->setUser($user);
+        $entry->setProject($project);
         $entry->setNotes($harvest_entry->get('notes'));
         $entry->setHours($harvest_entry->get('hours'));
         $entry->setIsClosed($harvest_entry->get('is-closed') == 'true' ? 1 : 0);
