@@ -7,6 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Harvester\FetchBundle\Entity\EntryRepository;
+use Harvest_Range;
 
 class HarvesterFetchEntriesCommand extends ContainerAwareCommand
 {
@@ -36,10 +37,9 @@ class HarvesterFetchEntriesCommand extends ContainerAwareCommand
 
         foreach ($users as $user)
         {
-            $entries = $api->getUserEntries($user->getId(), new \Harvest_Range('20140101', '20140131'));
+            $entries = $api->getUserEntries($user->getId(), new Harvest_Range('20140308', '20140324'));
             $doctrine->getManager()->getRepository('HarvesterFetchBundle:Entry')
                 ->registerEntry($entries, $output);
         }
-
     }
 }
