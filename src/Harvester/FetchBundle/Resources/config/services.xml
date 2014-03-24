@@ -4,6 +4,16 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
+    <!--<services>-->
+        <!--<service id="example.client" class="%guzzle.client.class%">-->
+            <!--<tag name="guzzle.client"/>-->
+            <!--<argument>http://reload.harvester.com/api/</argument>-->
+            <!--<call method="fetchUser">-->
+                <!--<argument type="service" id="test_plugin"/>-->
+            <!--</call>-->
+        <!--</service>-->
+    <!--</services>-->
+
     <!--
     <parameters>
         <parameter key="harvester_fetch.example.class">Harvester\FetchBundle\Example</parameter>

@@ -37,7 +37,7 @@ class HarvesterFetchEntriesCommand extends ContainerAwareCommand
 
         foreach ($users as $user)
         {
-            $entries = $api->getUserEntries($user->getId(), new Harvest_Range('20140308', '20140324'));
+            $entries = $api->getUserEntries($user->getId(), new Harvest_Range('20140101', '20140324'));
             $doctrine->getManager()->getRepository('HarvesterFetchBundle:Entry')
                 ->registerEntry($entries, $output);
         }

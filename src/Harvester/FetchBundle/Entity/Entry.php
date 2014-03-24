@@ -21,13 +21,6 @@ class Entry
     private $id;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="task_id", type="integer")
-     */
-    private $taskId;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="notes", type="text")
@@ -72,16 +65,16 @@ class Entry
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime")
+     * @ORM\Column(name="created_at", type="datetime")
      */
-    private $updatedAt;
+    private $createdAt;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime")
+     * @ORM\Column(name="updated_at", type="datetime")
      */
-    private $createdAt;
+    private $updatedAt;
 
     /**
      * @ORM\ManyToOne(targetEntity="Harvester\FetchBundle\Entity\User", inversedBy="entries")
@@ -94,6 +87,12 @@ class Entry
      * @ORM\JoinColumn(name="fk_project_id", referencedColumnName="id")
      */
     protected $project;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Harvester\FetchBundle\Entity\Task", inversedBy="entries")
+     * @ORM\JoinColumn(name="fk_task_id", referencedColumnName="id")
+     */
+    protected $tasks;
 
     /**
      * Set id
@@ -116,29 +115,6 @@ class Entry
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Set taskId
-     *
-     * @param integer $taskId
-     * @return Entry
-     */
-    public function setTaskId($taskId)
-    {
-        $this->taskId = $taskId;
-
-        return $this;
-    }
-
-    /**
-     * Get taskId
-     *
-     * @return integer 
-     */
-    public function getTaskId()
-    {
-        return $this->taskId;
     }
 
     /**
@@ -392,5 +368,28 @@ class Entry
     public function getProject()
     {
         return $this->project;
+    }
+
+    /**
+     * Set tasks
+     *
+     * @param \Harvester\FetchBundle\Entity\Task $tasks
+     * @return Entry
+     */
+    public function setTasks(\Harvester\FetchBundle\Entity\Task $tasks = null)
+    {
+        $this->tasks = $tasks;
+
+        return $this;
+    }
+
+    /**
+     * Get tasks
+     *
+     * @return \Harvester\FetchBundle\Entity\Task 
+     */
+    public function getTasks()
+    {
+        return $this->tasks;
     }
 }

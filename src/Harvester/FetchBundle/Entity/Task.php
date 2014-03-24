@@ -17,7 +17,6 @@ class Task
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
 
@@ -70,7 +69,23 @@ class Task
      */
     private $updatedAt;
 
+    /**
+     * @ORM\OneToMany(targetEntity="Harvester\FetchBundle\Entity\Task", mappedBy="user")
+     */
+    protected $tasks;
 
+    /**
+     * Set id
+     *
+     * @param string $id
+     * @return Task
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+
+        return $this;
+    }
     /**
      * Get id
      *
@@ -240,5 +255,45 @@ class Task
     public function getUpdatedAt()
     {
         return $this->updatedAt;
+    }
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->tasks = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add tasks
+     *
+     * @param \Harvester\FetchBundle\Entity\Task $tasks
+     * @return Task
+     */
+    public function addTask(\Harvester\FetchBundle\Entity\Task $tasks)
+    {
+        $this->tasks[] = $tasks;
+
+        return $this;
+    }
+
+    /**
+     * Remove tasks
+     *
+     * @param \Harvester\FetchBundle\Entity\Task $tasks
+     */
+    public function removeTask(\Harvester\FetchBundle\Entity\Task $tasks)
+    {
+        $this->tasks->removeElement($tasks);
+    }
+
+    /**
+     * Get tasks
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getTasks()
+    {
+        return $this->tasks;
     }
 }

@@ -22,13 +22,6 @@ class Project
     private $id;
 
     /**
-     * @var integer
-     *
-     * @ORM\Column(name="client_id", type="integer")
-     */
-    private $clientId;
-
-    /**
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
@@ -134,20 +127,6 @@ class Project
     private $showBudgetToAll;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
-     */
-    private $createdAt;
-
-    /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="updated_at", type="datetime")
-     */
-    private $updatedAt;
-
-    /**
      * @var float
      *
      * @ORM\Column(name="estimate", type="float")
@@ -176,9 +155,29 @@ class Project
     private $hintLatestRecordAt;
 
     /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="created_at", type="datetime")
+     */
+    private $createdAt;
+
+    /**
+     * @var \DateTime
+     *
+     * @ORM\Column(name="updated_at", type="datetime")
+     */
+    private $updatedAt;
+
+    /**
      * @ORM\OneToMany(targetEntity="Harvester\FetchBundle\Entity\Entry", mappedBy="project")
      */
     protected $entries;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Harvester\FetchBundle\Entity\Client", inversedBy="entries")
+     * @ORM\JoinColumn(name="fk_client_id", referencedColumnName="id")
+     */
+    protected $client;
 
     /**
      * Constructor.
@@ -210,29 +209,6 @@ class Project
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * Set clientId
-     *
-     * @param integer $clientId
-     * @return Project
-     */
-    public function setClientId($clientId)
-    {
-        $this->clientId = $clientId;
-
-        return $this;
-    }
-
-    /**
-     * Get clientId
-     *
-     * @return integer 
-     */
-    public function getClientId()
-    {
-        return $this->clientId;
     }
 
     /**
@@ -749,5 +725,51 @@ class Project
     public function getEntries()
     {
         return $this->entries;
+    }
+
+    /**
+     * Set clientId
+     *
+     * @param integer $clientId
+     * @return Project
+     */
+    public function setClientId($clientId)
+    {
+        $this->clientId = $clientId;
+
+        return $this;
+    }
+
+    /**
+     * Get clientId
+     *
+     * @return integer 
+     */
+    public function getClientId()
+    {
+        return $this->clientId;
+    }
+
+    /**
+     * Set client
+     *
+     * @param \Harvester\FetchBundle\Entity\Client $client
+     * @return Project
+     */
+    public function setClient(\Harvester\FetchBundle\Entity\Client $client = null)
+    {
+        $this->client = $client;
+
+        return $this;
+    }
+
+    /**
+     * Get client
+     *
+     * @return \Harvester\FetchBundle\Entity\Client 
+     */
+    public function getClient()
+    {
+        return $this->client;
     }
 }

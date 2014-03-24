@@ -63,6 +63,13 @@ class Client
     private $lastInvoiceKind;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="default_invoice_timeframe", type="string", length=255)
+     */
+    private $defaultInvoiceTimeframe;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
@@ -77,11 +84,9 @@ class Client
     private $updatedAt;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="default_invoice_timeframe", type="string", length=255)
+     * @ORM\OneToMany(targetEntity="Harvester\FetchBundle\Entity\Project", mappedBy="client")
      */
-    private $defaultInvoiceTimeframe;
+    protected $projects;
 
     /**
      * Set id
@@ -311,5 +316,45 @@ class Client
     public function getDefaultInvoiceTimeframe()
     {
         return $this->defaultInvoiceTimeframe;
+    }
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->projects = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add projects
+     *
+     * @param \Harvester\FetchBundle\Entity\Project $projects
+     * @return Client
+     */
+    public function addProject(\Harvester\FetchBundle\Entity\Project $projects)
+    {
+        $this->projects[] = $projects;
+
+        return $this;
+    }
+
+    /**
+     * Remove projects
+     *
+     * @param \Harvester\FetchBundle\Entity\Project $projects
+     */
+    public function removeProject(\Harvester\FetchBundle\Entity\Project $projects)
+    {
+        $this->projects->removeElement($projects);
+    }
+
+    /**
+     * Get projects
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getProjects()
+    {
+        return $this->projects;
     }
 }

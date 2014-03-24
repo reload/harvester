@@ -66,16 +66,16 @@ class User
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="updated_at", type="datetime")
+     * @ORM\Column(name="created_at", type="datetime")
      */
-    private $updatedAt;
+    private $createdAt;
 
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="created_at", type="datetime")
+     * @ORM\Column(name="updated_at", type="datetime")
      */
-    private $createdAt;
+    private $updatedAt;
 
     /**
      * @ORM\OneToMany(targetEntity="Harvester\FetchBundle\Entity\Entry", mappedBy="user")

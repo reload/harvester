@@ -43,8 +43,11 @@ class ProjectRepository extends EntityRepository
 
     public function saveProject(Project $project, Harvest_Project $harvest_project)
     {
+        $client = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Client')->findOneById($harvest_project->get('client-id'));
+
         $project->setId($harvest_project->get('id'));
         $project->setClientId($harvest_project->get('client-id'));
+        $project->setClient($client);
         $project->setName($harvest_project->get('name'));
         $project->setCode($harvest_project->get('code'));
         $project->setActive($harvest_project->get('active') == 'true' ? 1 : 0);

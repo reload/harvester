@@ -40,11 +40,12 @@ class EntryRepository extends EntityRepository
     {
         $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($harvest_entry->get('user-id'));
         $project = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Project')->findOneById($harvest_entry->get('project-id'));
+        $task = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Task')->findOneById($harvest_entry->get('task-id'));
 
         $entry->setId($harvest_entry->get('id'));
-        $entry->setTaskId($harvest_entry->get('task-id'));
         $entry->setUser($user);
         $entry->setProject($project);
+        $entry->setTasks($task);
         $entry->setNotes($harvest_entry->get('notes'));
         $entry->setHours($harvest_entry->get('hours'));
         $entry->setIsClosed($harvest_entry->get('is-closed') == 'true' ? 1 : 0);
