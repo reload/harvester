@@ -1,5 +1,13 @@
+harvester_api:
+    type:     rest
+    prefix:   /api
+    resource: "@HarvesterAPIBundle/Resources/config/routes.yml"
+
 harvester_fetch:
     resource: "@HarvesterFetchBundle/Controller/"
     type:     annotation
     prefix:   /
 
+NelmioApiDocBundle:
+    resource: "@NelmioApiDocBundle/Resources/config/routing.yml"
+    prefix:   /api/doc

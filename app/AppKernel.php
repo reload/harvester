@@ -20,6 +20,7 @@ class AppKernel extends Kernel
             new FOS\RestBundle\FOSRestBundle(),
             new JMS\SerializerBundle\JMSSerializerBundle(),
             new Nelmio\ApiDocBundle\NelmioApiDocBundle(),
+            new Harvester\APIBundle\HarvesterAPIBundle(),
             new Harvester\FetchBundle\HarvesterFetchBundle(),
         );
 
