@@ -17,7 +17,7 @@ use DateTime;
  */
 class EntryRepository extends EntityRepository
 {
-    public function registerEntry(Harvest_Result $user_entries, $output)
+    public function registerEntry(Harvest_Result $user_entries, $input, $output)
     {
         foreach ($user_entries->get('data') as $user_entry)
         {
@@ -27,11 +27,24 @@ class EntryRepository extends EntityRepository
             {
                 $entry = new Entry();
                 $this->saveEntry($entry, $user_entry);
-                $output->writeln('<info>created.</info>');
+                $output->writeln('<info>Entry created.</info>');
             }
             else
             {
-                $output->writeln('<comment>not created.</comment>');
+                $entry_last_update = new DateTime($user_entry->get('updated-at'));
+
+                if ($entry->getUpdatedAt()->getTimestamp() < $entry_last_update->getTimestamp()-3600)
+                {
+                    $this->saveEntry($entry, $user_entry);
+                    $output->writeln('<fire>Entry have been updated.</fire>');
+                }
+                else
+                {
+                    $output->writeln('<comment>Entry is up to date.</comment>');
+                }
+
+
+                $output->writeln($user_entry->get('id') . ' <comment>not created.</comment>');
             }
         }
     }
