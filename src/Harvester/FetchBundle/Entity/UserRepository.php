@@ -24,6 +24,7 @@ class UserRepository extends EntityRepository
     {
         $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($harvest_user->id);
 
+        // Create user.
         if (!$user)
         {
             $user = new User;
@@ -34,24 +35,23 @@ class UserRepository extends EntityRepository
         {
             $user_last_update = new DateTime($harvest_user->get('updated-at'));
 
+            // Check if user is updated in the Harvest API.
             if ($user->getUpdatedAt()->getTimestamp() < $user_last_update->getTimestamp()-3600)
             {
+                // Update user.
                 $this->saveUser($user, $harvest_user);
-                $output->writeln('<fire>'.$harvest_user->first_name . ' ' . $harvest_user->last_name.  ' have been updated.</fire>');
             }
-            else
-            {
-                $output->writeln('<comment>'.$harvest_user->first_name . ' ' . $harvest_user->last_name . ' is up to date.</comment>');
-            }
-
         }
+
+        return $user;
     }
 
     /**
      * Save Harvest_User to database.
      *
      * @param User $user
-     * @param Harvest_User $harvest_user
+     * @param Harvest_User $harvest_user.
+     * @return User $user
      */
     public function saveUser(User $user, Harvest_User $harvest_user)
     {
@@ -68,5 +68,7 @@ class UserRepository extends EntityRepository
         $em = $this->getEntityManager();
         $em->persist($user);
         $em->flush();
+
+        return $user;
     }
 }
