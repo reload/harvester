@@ -2,6 +2,8 @@ imports:
     - { resource: parameters.yml }
     - { resource: security.yml }
 
+nelmio_api_doc: ~
+
 framework:
     #esi:             ~
     #translator:      { fallback: "%locale%" }

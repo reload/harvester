@@ -19,7 +19,10 @@
         "sensio/framework-extra-bundle": "~3.0",
         "sensio/generator-bundle": "~2.3",
         "incenteev/composer-parameter-handler": "~2.0",
-        "mattvick/harvest-app-bundle": "dev-master"
+        "mattvick/harvest-app-bundle": "dev-master",
+        "friendsofsymfony/rest-bundle": "@dev",
+        "jms/serializer-bundle": "@dev",
+        "nelmio/api-doc-bundle": "@dev"
     },
     "repositories": [
         {
