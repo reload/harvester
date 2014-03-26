@@ -4,12 +4,15 @@ namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Expose;
 
 /**
  * Project
  *
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Harvester\FetchBundle\Entity\ProjectRepository")
+ * @ExclusionPolicy("all")
  */
 class Project
 {
@@ -18,6 +21,7 @@ class Project
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
+     * @Expose
      */
     private $id;
 
@@ -25,6 +29,7 @@ class Project
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
+     * @Expose
      */
     private $name;
 
@@ -176,6 +181,7 @@ class Project
     /**
      * @ORM\ManyToOne(targetEntity="Harvester\FetchBundle\Entity\Client", inversedBy="entries")
      * @ORM\JoinColumn(name="fk_client_id", referencedColumnName="id")
+     * @Expose
      */
     protected $client;
 

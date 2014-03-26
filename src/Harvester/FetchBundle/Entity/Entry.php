@@ -3,12 +3,15 @@
 namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Expose;
 
 /**
  * Entry
  *
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Harvester\FetchBundle\Entity\EntryRepository")
+ * @ExclusionPolicy("all")
  */
 class Entry
 {
@@ -17,6 +20,7 @@ class Entry
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
+     * @Expose
      */
     private $id;
 
@@ -24,6 +28,7 @@ class Entry
      * @var string
      *
      * @ORM\Column(name="notes", type="text")
+     * @Expose
      */
     private $notes;
 
@@ -31,6 +36,7 @@ class Entry
      * @var float
      *
      * @ORM\Column(name="hours", type="float")
+     * @Expose
      */
     private $hours;
 
@@ -79,18 +85,21 @@ class Entry
     /**
      * @ORM\ManyToOne(targetEntity="Harvester\FetchBundle\Entity\User", inversedBy="entries")
      * @ORM\JoinColumn(name="fk_user_id", referencedColumnName="id")
+     * @Expose
      */
     protected $user;
 
     /**
      * @ORM\ManyToOne(targetEntity="Harvester\FetchBundle\Entity\Project", inversedBy="entries")
      * @ORM\JoinColumn(name="fk_project_id", referencedColumnName="id")
+     * @Expose
      */
     protected $project;
 
     /**
      * @ORM\ManyToOne(targetEntity="Harvester\FetchBundle\Entity\Task", inversedBy="entries")
      * @ORM\JoinColumn(name="fk_task_id", referencedColumnName="id")
+     * @Expose
      */
     protected $tasks;
 

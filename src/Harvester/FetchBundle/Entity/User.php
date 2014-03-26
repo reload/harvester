@@ -4,12 +4,15 @@ namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Expose;
 
 /**
  * User
  *
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Harvester\FetchBundle\Entity\UserRepository")
+ * @ExclusionPolicy("all")
  */
 class User
 {
@@ -18,6 +21,7 @@ class User
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
+     * @Expose
      */
     private $id;
 
@@ -25,6 +29,7 @@ class User
      * @var string
      *
      * @ORM\Column(name="first_name", type="string", length=255)
+     * @Expose
      */
     private $firstName;
 
@@ -32,6 +37,7 @@ class User
      * @var string
      *
      * @ORM\Column(name="last_name", type="string", length=255)
+     * @Expose
      */
     private $lastName;
 
@@ -39,6 +45,7 @@ class User
      * @var string
      *
      * @ORM\Column(name="email", type="string", length=255)
+     * @Expose
      */
     private $email;
 
@@ -89,7 +96,6 @@ class User
     {
         $this->entries = new ArrayCollection();
     }
-
 
     /**
      * Set id

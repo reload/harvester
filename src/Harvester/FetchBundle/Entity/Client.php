@@ -3,12 +3,15 @@
 namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Expose;
 
 /**
  * Client
  *
  * @ORM\Table()
  * @ORM\Entity(repositoryClass="Harvester\FetchBundle\Entity\ClientRepository")
+ * @ExclusionPolicy("all")
  */
 class Client
 {
@@ -17,6 +20,7 @@ class Client
      *
      * @ORM\Column(name="id", type="integer")
      * @ORM\Id
+     * @Expose
      */
     private $id;
 
@@ -24,6 +28,7 @@ class Client
      * @var string
      *
      * @ORM\Column(name="name", type="string", length=255)
+     * @Expose
      */
     private $name;
 
