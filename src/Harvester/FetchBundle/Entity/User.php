@@ -71,6 +71,14 @@ class User
     private $isContractor;
 
     /**
+     * @var float
+     *
+     * @ORM\Column(name="working_hours", type="float")
+     * @Expose
+     */
+    private $workingHours;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
@@ -256,6 +264,19 @@ class User
     public function getIsContractor()
     {
         return $this->isContractor;
+    }
+
+    public function setWorkingHours($workingHours)
+    {
+        $this->workingHours = $workingHours;
+
+        return $this;
+    }
+
+
+    public function getWorkingHours()
+    {
+        return $this->workingHours;
     }
 
     /**

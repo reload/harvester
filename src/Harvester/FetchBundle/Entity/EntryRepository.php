@@ -17,38 +17,43 @@ use DateTime;
  */
 class EntryRepository extends EntityRepository
 {
-    public function registerEntry(Harvest_Result $user_entries, $input, $output)
+    /**
+     * Register the new Entry.
+     *
+     * @param Harvest_Result $user_entries
+     * @param $output
+     * @throws \Harvest_Exception
+     */
+    public function registerEntry(Harvest_Result $user_entries, $output)
     {
-        foreach ($user_entries->get('data') as $user_entry)
-        {
+        foreach ($user_entries->get('data') as $user_entry) {
             $entry = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Entry')->findOneById($user_entry->get('id'));
 
-            if (!$entry)
-            {
+            if (!$entry) {
                 $entry = new Entry();
                 $this->saveEntry($entry, $user_entry);
                 $output->writeln('<info>Entry created.</info>');
             }
-            else
-            {
+            else {
                 $entry_last_update = new DateTime($user_entry->get('updated-at'));
 
-                if ($entry->getUpdatedAt()->getTimestamp() < $entry_last_update->getTimestamp()-3600)
-                {
+                if ($entry->getUpdatedAt()->getTimestamp() < $entry_last_update->getTimestamp()-3600) {
                     $this->saveEntry($entry, $user_entry);
                     $output->writeln('<fire>Entry have been updated.</fire>');
                 }
-                else
-                {
+                else {
                     $output->writeln('<comment>Entry is up to date.</comment>');
                 }
-
-
-                $output->writeln($user_entry->get('id') . ' <comment>not created.</comment>');
             }
         }
     }
 
+    /**
+     * Save Entry to database.
+     *
+     * @param Entry $entry
+     * @param Harvest_DayEntry $harvest_entry
+     */
     public function saveEntry(Entry $entry, Harvest_DayEntry $harvest_entry)
     {
         $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($harvest_entry->get('user-id'));
@@ -71,5 +76,125 @@ class EntryRepository extends EntityRepository
         $em = $this->getEntityManager();
         $em->persist($entry);
         $em->flush();
+    }
+
+    public function groupByUser(\Doctrine\ORM\QueryBuilder $query, Array $query_result, $working_hours_per_day = null)
+    {
+        // Fetch date range from query.
+        $date_to = $query->getQuery()->getParameter('date_to');
+        $date_from = $query->getQuery()->getParameter('date_from');
+
+        $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), time());
+
+        $hours = 0;
+        $hours_in_range = null;
+        $hours_to_today = null;
+        $ranking = array();
+        $old_user = [];
+
+        foreach ($query_result as $row) {
+            if ($row->getUser()->getIsActive() && !$row->getUser()->getIsContractor()) {
+                if (!array_key_exists($row->getUser()->getId(), $old_user) || count($old_user) == 0) {
+                    $working_hours = $row->getUser()->getWorkingHours() != 0 ? $row->getUser()->getWorkingHours() : 7.5;
+                    $hours_in_range += $working_hours * $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), $date_to->getValue()->format('U'));
+                    $hours_to_today += $working_hours * $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), time());
+                    $old_user[$row->getUser()->getId()] = true;
+                }
+                $hours += $row->getHours();
+                $user_entries[$row->getUser()->getId()][] = $row;
+            }
+        }
+
+        foreach ($user_entries as $user) {
+            $ranking[] = $this->parseRanking($user, $workingdays_to_now, $working_hours_per_day);
+        }
+
+        return array(
+            'succes' => ($query_result ? true : false),
+            'ranking' => $ranking,
+            'date_start' => $date_from->getValue()->format('U'),
+            'date_end' => $date_to->getValue()->format('U'),
+            'hours_until_today' => $hours_to_today,
+            'hours_total_month' => $hours_in_range,
+            'hours_total_registered' => $hours,
+        );
+    }
+
+    /**
+     * Find amount of working days in range.
+     *
+     * @param int $from
+     * @param int $to
+     * @return int
+     */
+    public function calcWorkingDaysInRange($from, $to)
+    {
+        $work_days = 0;
+        for ($i = $from; $i < $to; $i+=86400) {
+            $tmp_day = Datetime::createFromFormat('U', $i);
+            if ($tmp_day->format('N') < 6) {
+                ++$work_days;
+            }
+        }
+        return $work_days-1;
+    }
+
+    /**
+     * Find a raking group calc'ed from work performance.
+     *
+     * @param float $hours_registered
+     * @param float $hours_goal
+     * @return string
+     */
+    public function determineRankingGroup($hours_registered, $hours_goal) {
+        $performance = round($hours_registered/$hours_goal*100);
+
+        if($performance >= 110) {
+            $group = "A-karmahunter";
+        } elseif ($performance < 110 && $performance >= 98) {
+            $group = "B-goalie";
+        } elseif ($performance < 98 && $performance >= 80) {
+            $group = "C-karmauser";
+        } else {
+            $group = "D-slacker";
+        }
+        return $group;
+    }
+
+
+    /**
+     * Parse the user ranking into an array.
+     *
+     * @param $user_entries
+     * @param int $workingdays_to_now
+     * @param float $user_working_hours
+     * @return array
+     */
+    public function parseRanking(Array $user_entries, $workingdays_to_now, $user_working_hours = null)
+    {
+        $hours = 0;
+
+        foreach ($user_entries as $entry) {
+            $hours += $entry->getHours();
+        }
+
+        if ($entry->getUser()->getWorkingHours() > 0) {
+            $user_working_hours = $entry->getUser()->getWorkingHours();
+        }
+
+        $hours_goal = $workingdays_to_now * $user_working_hours;
+        $user_id = str_pad($entry->getUser()->getId(), 9, 0, STR_PAD_LEFT);
+        $split_user_id = str_split($user_id, 3);
+
+        return array(
+            'group' => $this->determineRankingGroup($hours, $hours_goal),
+            'performance' => round($hours/$hours_goal*100),
+            'hours_goal' => $hours_goal,
+            'hours_registered' => $hours,
+            'name' => $entry->getUser()->getFirstName(),
+            'user_id_first_part' => $split_user_id[0],
+            'user_id_second_part' => $split_user_id[1],
+            'user_id_third_part' => $split_user_id[2],
+        );
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Harvester\APIBundle\Controller;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Routing\ClassResourceInterface;
 use JMS\Serializer\SerializerBuilder;
@@ -101,5 +102,44 @@ class UserController extends FOSRestController  implements ClassResourceInterfac
         $view = $this->view($entries, $entries ? 200 : 404);
 
         return $this->handleView($view);
+    }
+
+    /**
+     */
+    public function getTimekingAction()
+    {
+        $data = array(
+            'succes' => 'true',
+            'hours_total_registered' => 0,
+            'hours_total_month' => 0,
+            'hours_until_today' => 0,
+            'date_start' => 0,
+            'date_end' => 0,
+            'timestamp' => time(),
+        );
+
+        $users = $this->container->get('doctrine.orm.entity_manager')->getRepository('HarvesterFetchBundle:User')->findAll();
+
+        foreach ($users as $user) {
+            $hours = 0;
+            foreach ($user->getEntries() as $entry) {
+                $hours+=$entry->getHours();
+            }
+            $data['ranking'][] = array(
+                'user_id_first_part' => '0',
+                'user_id_second_part' => '0',
+                'user_id_third_part' => '0',
+                'name' => $user->getFirstName(),
+                'hours_registered' => $hours ,
+                'hours_goal' => '0',
+                'performance' => '0',
+                'group' => '0',
+            );
+
+        }
+        $view = $this->view($data, 200);
+
+        return $this->handleView($view);
+
     }
 }

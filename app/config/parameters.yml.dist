@@ -13,3 +13,10 @@ parameters:
 
     locale:            en
     secret:            ThisTokenIsNotSoSecretChangeIt
+
+    default_hours_per_day:  7.5
+
+mattvick_harvest_app:
+    user:      'harvest_account_email@email.com'
+    password:  'secretpassword'
+    account:   'harvestapp_account_name'
