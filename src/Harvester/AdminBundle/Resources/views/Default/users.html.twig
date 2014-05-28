@@ -1,0 +1,36 @@
+{% extends "HarvesterAdminBundle:Default:base.html.twig" %}
+
+{% block body %}
+    <h2>Users</h2>
+
+    <div class="container">
+        {% if form %}
+            {{ form(form, {'attr': {'role': 'form', 'class': 'form-inline'}}) }}
+        {% endif %}
+    </div>
+    <table class="table table-striped table-bordered table-hover table-condensed">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Working hours per day</th>
+            <th>Active</th>
+            <th>Admin</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for user in users %}
+            {#{{ dump(user) }}#}
+            <tr class="{% if user.workingHours > 0 %}info{% endif %}">
+                <td>{{ user.firstName ~ ' ' ~ user.lastName}}</td>
+                <td>{{ user.email }}</td>
+                <td>{%  if user.workingHours > 0 %}{{ user.workingHours }}{% else %}{{ default_hours_per_day }}{% endif %}</td>
+                <td>{{ user.isActive ? 'Yes' : 'No' }}</td>
+                <td>{{ user.isAdmin ? 'Yes' : 'No' }}</td>
+                <td><a href="/app_dev.php/admin/users/{{ user.id }}">Edit</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

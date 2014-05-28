@@ -22,6 +22,7 @@ class AppKernel extends Kernel
             new Nelmio\ApiDocBundle\NelmioApiDocBundle(),
             new Harvester\APIBundle\HarvesterAPIBundle(),
             new Harvester\FetchBundle\HarvesterFetchBundle(),
+            new Harvester\AdminBundle\HarvesterAdminBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
