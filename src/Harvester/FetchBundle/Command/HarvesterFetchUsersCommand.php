@@ -26,6 +26,12 @@ class HarvesterFetchUsersCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $api = $this->getContainer()->get('harvest_app_reports')->getApi();
+
+        // Check if we have a valid connection to the API.
+        if (!$api->getUsers()->isSuccess()) {
+            throw new \Harvest_Exception($api->getUsers()->get('data'));
+        }
+
         $doctrine = $this->getContainer()->get('doctrine');
 
         $style = new OutputFormatterStyle('red', 'black');
