@@ -73,7 +73,7 @@ class User
     /**
      * @var float
      *
-     * @ORM\Column(name="working_hours", type="float")
+     * @ORM\Column(name="working_hours", type="float", nullable=true, options={"default": 0})
      * @Expose
      */
     private $workingHours;
