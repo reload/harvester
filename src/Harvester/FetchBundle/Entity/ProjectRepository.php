@@ -4,6 +4,7 @@ namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
 use Harvest_Project;
+use HarvestReports;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use DateTime;
 /**
@@ -14,37 +15,58 @@ use DateTime;
  */
 class ProjectRepository extends EntityRepository
 {
-    public function registerProject(Harvest_Project $harvest_project, ConsoleOutput $output)
+    /**
+     * Register the project.
+     *
+     * @param Harvest_Project $harvest_project
+     * @param ConsoleOutput $output
+     * @param $api
+     * @return Project
+     */
+    public function registerProject(Harvest_Project $harvest_project, ConsoleOutput $output, HarvestReports $api)
     {
         $project = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Project')->findOneById($harvest_project->id);
 
-        if (!$project)
-        {
+        if (!$project) {
             $project = new Project();
-            $this->saveProject($project, $harvest_project);
+            $this->saveProject($project, $harvest_project, $api);
             $output->writeln('<info>' . $harvest_project->get('name') . ' created.</info>');
         }
-        else
-        {
+        else {
             $project_last_update = new DateTime($harvest_project->get('updated-at'));
 
-            if ($project->getUpdatedAt()->getTimestamp() < $project_last_update->getTimestamp()-3600)
-            {
+            if ($project->getUpdatedAt()->getTimestamp() < $project_last_update->getTimestamp()-3600) {
                 $this->saveProject($project, $harvest_project);
                 $output->writeln('<info>'.$harvest_project->get('name') .  ' have been updated.</info>');
             }
-            else
-            {
+            else {
                 $output->writeln('<comment>'.$harvest_project->get('name') .  ' is up to date.</comment>');
             }
-
         }
+
+        return $project;
     }
 
-    public function saveProject(Project $project, Harvest_Project $harvest_project)
+    /**
+     * Save the project to db.
+     *
+     * @param Project $project
+     * @param Harvest_Project $harvest_project
+     * @param HarvestReports $api
+     * @return Project
+     */
+    public function saveProject(Project $project, Harvest_Project $harvest_project, HarvestReports $api)
     {
         $client = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Client')->findOneById($harvest_project->get('client-id'));
 
+        // If the client doesn't exist in db, create it.
+        if (!$client) {
+            $harvest_client = $api->getClient($harvest_project->get('client-id'));
+            $client = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Client')
+                ->registerClient($harvest_client->get('data'), new ConsoleOutput(), $api);
+        }
+
+        // Create project object.
         $project->setId($harvest_project->get('id'));
         $project->setClientId($harvest_project->get('client-id'));
         $project->setClient($client);
@@ -70,8 +92,11 @@ class ProjectRepository extends EntityRepository
         $project->setHintEarliestRecordAt(new DateTime($harvest_project->get('hint-earliest-record-at')));
         $project->setHintLatestRecordAt(new DateTime($harvest_project->get('hint-latest-record-at')));
 
+        // Save the project to db.
         $em = $this->getEntityManager();
         $em->persist($project);
         $em->flush();
+
+        return $project;
     }
 }

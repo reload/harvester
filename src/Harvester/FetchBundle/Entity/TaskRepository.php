@@ -4,6 +4,8 @@ namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
 use DateTime;
+use Harvest_Task;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 /**
  * TaskRepository
@@ -13,37 +15,31 @@ use DateTime;
  */
 class TaskRepository extends EntityRepository
 {
-   public function registerTask($harvest_tasks, $output)
-   {
-       foreach ($harvest_tasks->get('data') as $harvest_task)
-       {
-           $task = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Task')->findOneById($harvest_task->get('id'));
 
-           if (!$task)
-           {
-               $task = new Task();
-               $this->saveTask($task, $harvest_task);
-               $output->writeln('<info>' . $harvest_task->get('name') . '<info> <comment>created.</comment>');
-           }
-           else
-           {
-               $task_last_update = new DateTime($harvest_task->get('updated-at'));
+    public function registerTask(Harvest_Task $harvest_task, ConsoleOutput $output)
+    {
+        $task = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Task')->findOneById($harvest_task->get('id'));
 
-               if ($task->getUpdatedAt()->getTimestamp() < ($task_last_update->getTimestamp()-7200))
-               {
-                   $this->saveTask($task, $harvest_task);
-                   $output->writeln('<info>'.$harvest_task->name. ' have been updated.</info>');
-               }
-               else
-               {
-                   $output->writeln('<comment>'.$harvest_task->name . ' is up to date.</comment>');
-               }
+        if (!$task) {
+            $task = new Task();
+            $this->saveTask($task, $harvest_task);
+            $output->writeln('<info>' . $harvest_task->get('name') . '<info> <comment>created.</comment>');
+        }
+        else {
+            $task_last_update = new DateTime($harvest_task->get('updated-at'));
 
-           }
-       }
-   }
+            if ($task->getUpdatedAt()->getTimestamp() < ($task_last_update->getTimestamp()-7200)) {
+                $this->saveTask($task, $harvest_task);
+                $output->writeln('<info>'.$harvest_task->name. ' have been updated.</info>');
+            }
+            else {
+                $output->writeln('<comment>'.$harvest_task->name . ' is up to date.</comment>');
+            }
 
-    public function saveTask(Task $task, $harvest_task)
+        }
+    }
+
+    public function saveTask(Task $task, Harvest_Task $harvest_task)
     {
         $task->setId($harvest_task->get('id'));
         $task->setName($harvest_task->get('name'));

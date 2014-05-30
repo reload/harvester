@@ -7,7 +7,11 @@ use Harvester\FetchBundle\Entity\User;
 use Harvester\FetchBundle\Entity\Project;
 use Harvest_Result;
 use Harvest_DayEntry;
+use HarvestReports;
 use DateTime;
+use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * EntryRepository
@@ -22,27 +26,31 @@ class EntryRepository extends EntityRepository
      *
      * @param Harvest_Result $user_entries
      * @param $output
-     * @throws \Harvest_Exception
+     * @param HarvestReports $api
      */
-    public function registerEntry(Harvest_Result $user_entries, $output)
+    public function registerEntry(Harvest_Result $user_entries, OutputInterface $output, HarvestReports $api)
     {
+        $count_new_entries = $count_updated_entries = 0;
         foreach ($user_entries->get('data') as $user_entry) {
             $entry = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Entry')->findOneById($user_entry->get('id'));
 
             if (!$entry) {
                 $entry = new Entry();
-                $this->saveEntry($entry, $user_entry);
-                $output->writeln('<info>Entry created.</info>');
+                $this->saveEntry($entry, $user_entry, $api);
+                if (!$count_new_entries) {
+                    $output->writeln('<info>--> Entries created.</info>');
+                    ++$count_new_entries;
+                }
             }
             else {
                 $entry_last_update = new DateTime($user_entry->get('updated-at'));
 
-                if ($entry->getUpdatedAt()->getTimestamp() < $entry_last_update->getTimestamp()-3600) {
-                    $this->saveEntry($entry, $user_entry);
-                    $output->writeln('<fire>Entry have been updated.</fire>');
-                }
-                else {
-                    $output->writeln('<comment>Entry is up to date.</comment>');
+                if ($entry->getUpdatedAt()->getTimestamp() < $entry_last_update->getTimestamp()-7200) {
+                    $this->saveEntry($entry, $user_entry, $api);
+                    if (!$count_updated_entries) {
+                        $output->writeln('<info>--> Entries updated.</info>');
+                        ++$count_updated_entries;
+                    }
                 }
             }
         }
@@ -53,13 +61,29 @@ class EntryRepository extends EntityRepository
      *
      * @param Entry $entry
      * @param Harvest_DayEntry $harvest_entry
+     * @param HarvestReports $api
      */
-    public function saveEntry(Entry $entry, Harvest_DayEntry $harvest_entry)
+    public function saveEntry(Entry $entry, Harvest_DayEntry $harvest_entry, HarvestReports $api)
     {
         $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($harvest_entry->get('user-id'));
         $project = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Project')->findOneById($harvest_entry->get('project-id'));
         $task = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Task')->findOneById($harvest_entry->get('task-id'));
 
+        // If the project doesn't exist in db, create it.
+        if (!$project) {
+            $harvest_project = $api->getProject($harvest_entry->get('project-id'));
+            $project = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Project')
+                ->registerProject($harvest_project->get('data'), new ConsoleOutput(), $api);
+        }
+
+        // If the task doesn't exist in db, create it.
+        if (!$task) {
+            $harvest_task = $api->getTask($harvest_entry->get('task-id'));
+            $task = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Task')
+                ->registerTask($harvest_task->get('data'), new ConsoleOutput(), $api);
+        }
+
+        // Create the entry.
         $entry->setId($harvest_entry->get('id'));
         $entry->setUser($user);
         $entry->setProject($project);
@@ -73,6 +97,7 @@ class EntryRepository extends EntityRepository
         $entry->setUpdatedAt(new DateTime($harvest_entry->get('updated-at')));
         $entry->setCreatedAt(new DateTime($harvest_entry->get('created-at')));
 
+        // Save it to db.
         $em = $this->getEntityManager();
         $em->persist($entry);
         $em->flush();

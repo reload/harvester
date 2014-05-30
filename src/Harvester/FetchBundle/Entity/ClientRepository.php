@@ -4,7 +4,11 @@ namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
 use Harvest_Client;
+use HarvestReports;
 use DateTime;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Output\OutputInterface;
+
 /**
  * ClientRepository
  *
@@ -13,36 +17,47 @@ use DateTime;
  */
 class ClientRepository extends EntityRepository
 {
-    public function registerClient($harvest_clients, $output)
+
+    /**
+     * Register the client.
+     *
+     * @param Harvest_Client $harvest_client
+     * @param ConsoleOutput $output
+     * @return Client
+     */
+    public function registerClient(Harvest_Client $harvest_client, ConsoleOutput $output)
     {
-        foreach ($harvest_clients->get('data') as $harvest_client)
-        {
-            $client = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Client')->findOneById($harvest_client->get('id'));
+        $client = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Client')->findOneById($harvest_client->get('id'));
 
-            if (!$client)
-            {
-                $client = new Client();
-                $this->saveClient($client, $harvest_client);
-                $output->writeln('<info>' . $harvest_client->get('name') . '<info> <comment>created.</comment>');
-            }
-            else
-            {
-                $client_last_update = new DateTime($harvest_client->get('updated-at'));
-
-                if ($client->getUpdatedAt()->getTimestamp() < $client_last_update->getTimestamp()-3600)
-                {
-                    $this->saveClient($client, $harvest_client);
-                    $output->writeln('<info>'.$harvest_client->name. ' have been updated.</info>');
-                }
-                else
-                {
-                    $output->writeln('<comment>'.$harvest_client->name . ' is up to date.</comment>');
-                }
-
-            }
+        if (!$client) {
+            // If the client doesn't exist locally, create it.
+            $client = new Client();
+            $this->saveClient($client, $harvest_client);
+            $output->writeln('<info>' . $harvest_client->get('name') . '<info> <comment>created.</comment>');
         }
+        else {
+            // If the client exists and it's been updated, update it.
+            $client_last_update = new DateTime($harvest_client->get('updated-at'));
+
+            if ($client->getUpdatedAt()->getTimestamp() < $client_last_update->getTimestamp()-3600) {
+                $this->saveClient($client, $harvest_client);
+                $output->writeln('<info>'.$harvest_client->name. ' have been updated.</info>');
+            }
+            else {
+                $output->writeln('<comment>'.$harvest_client->name . ' is up to date.</comment>');
+            }
+
+        }
+        return $client;
     }
 
+    /**
+     * Save the client to db.
+     *
+     * @param Client $client
+     * @param Harvest_Client $harvest_client
+     * @return Client
+     */
     public function saveClient(Client $client, Harvest_Client $harvest_client)
     {
         $client->setId($harvest_client->get('id'));
@@ -60,5 +75,6 @@ class ClientRepository extends EntityRepository
         $em->persist($client);
         $em->flush();
 
+        return $client;
     }
 }

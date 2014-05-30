@@ -5,6 +5,7 @@ namespace Harvester\FetchBundle\Entity;
 use Doctrine\ORM\EntityRepository;
 use DateTime;
 use Harvest_User;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * UserRepository
@@ -20,26 +21,24 @@ class UserRepository extends EntityRepository
      * @param \Harvest_User $harvest_user
      * @param $output
      */
-    public function registerUser(Harvest_User $harvest_user, $output)
+    public function registerUser(Harvest_User $harvest_user, OutputInterface $output)
     {
         $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($harvest_user->id);
 
         // Create user.
-        if (!$user)
-        {
+        if (!$user) {
             $user = new User;
             $this->saveUser($user, $harvest_user);
-            $output->writeln('<info>' . $harvest_user->first_name . ' ' . $harvest_user->last_name . ' created.</info>');
+            $output->writeln('<info> --> created.</info>');
         }
-        else
-        {
+        else {
             $user_last_update = new DateTime($harvest_user->get('updated-at'));
 
             // Check if user is updated in the Harvest API.
-            if ($user->getUpdatedAt()->getTimestamp() < $user_last_update->getTimestamp()-3600)
-            {
+            if ($user->getUpdatedAt()->getTimestamp() < $user_last_update->getTimestamp() - 7200) {
                 // Update user.
                 $this->saveUser($user, $harvest_user);
+                $output->writeln('<comment>--> updated.</comment>');
             }
         }
 
