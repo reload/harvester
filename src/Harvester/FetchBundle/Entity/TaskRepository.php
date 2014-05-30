@@ -35,8 +35,8 @@ class TaskRepository extends EntityRepository
             else {
                 $output->writeln('<comment>'.$harvest_task->name . ' is up to date.</comment>');
             }
-
         }
+        return $task;
     }
 
     public function saveTask(Task $task, Harvest_Task $harvest_task)
@@ -53,5 +53,7 @@ class TaskRepository extends EntityRepository
         $em = $this->getEntityManager();
         $em->persist($task);
         $em->flush();
+
+        return $task;
     }
 }
