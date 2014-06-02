@@ -109,7 +109,7 @@ class EntryRepository extends EntityRepository
         $date_to = $query->getQuery()->getParameter('date_to');
         $date_from = $query->getQuery()->getParameter('date_from');
 
-        $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), time());
+        $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U')+7200, time());
 
         $hours = 0;
         $hours_in_range = null;
@@ -155,13 +155,13 @@ class EntryRepository extends EntityRepository
     public function calcWorkingDaysInRange($from, $to)
     {
         $work_days = 0;
-        for ($i = $from; $i < $to; $i+=86400) {
+        for ($i = $from; $i < $to; $i += 86400) {
             $tmp_day = Datetime::createFromFormat('U', $i);
             if ($tmp_day->format('N') < 6) {
                 ++$work_days;
             }
         }
-        return $work_days-1;
+        return $work_days;
     }
 
     /**
