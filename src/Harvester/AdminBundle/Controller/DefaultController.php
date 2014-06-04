@@ -7,7 +7,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
-
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
+use Swift_Message;
 class DefaultController extends Controller
 {
     /**
@@ -20,28 +22,90 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/admin/users/{userid}")
+     * @Route("/admin/users/{user_id}/generate_password", name="_generatepassword")
+     * @param $user_id
+     */
+    public function generatePasswordAction($user_id = null)
+    {
+        if ($user_id !== null) {
+            $doctrine = $this->container->get('doctrine.orm.entity_manager');
+            $generator = new UriSafeTokenGenerator();
+            $token = $generator->generateToken();
+            $user_password = substr($token, 0, 6);
+
+            // Change user password.
+            $user = $doctrine->getRepository('HarvesterFetchBundle:User')->findOneById($user_id);
+            $user->setPassword($user_password);
+            $doctrine->persist($user);
+            $doctrine->flush();
+
+            // Mail the user with new password.
+            $message = Swift_Message::newInstance()
+                ->setSubject('Hello Email')
+                ->setFrom('harvest@reload.dk')
+                ->setTo($user->getEmail())
+                ->setBody(
+                    $this->renderView(
+                        'HarvesterAdminBundle:Default:email.html.twig',
+                        array(
+                            'name' => $user->getFirstname(),
+                            'password' => $user_password,
+                        )
+                    )
+                );
+            $this->get('mailer')->send($message);
+
+            $this->get('session')->getFlashBag()->add(
+                'success',
+                'New password for <strong>' . $user->getFirstname() . ' ' . $user->getLastname() . '</strong> is generated.'
+            );
+        }
+        return $this->redirect('/app_dev.php/admin/users');
+
+    }
+
+    /**
+     * @Route("/admin/users/{user_id}", name="_useredit")
      * * @Template()
      */
-    public function usersAction(Request $request, $userid = null)
+    public function usersAction(Request $request, $user_id = null)
     {
         $rendered_form = false;
         $doctrine = $this->container->get('doctrine.orm.entity_manager');
 
-        if ($userid == true) {
-            $user = $doctrine->getRepository('HarvesterFetchBundle:User')->findOneById($userid);
+        if ($user_id == true) {
+            $user = $doctrine->getRepository('HarvesterFetchBundle:User')->findOneById($user_id);
 
             $form = $this->createFormBuilder($user)
-                ->add('workingHours', 'text', array('attr' => array('class' => 'form-control')))
-                ->add('save', 'submit', array('attr' => array('class' => 'btn btn-default')))
+                ->add('workingHours', 'text', array(
+                    'attr' => array(
+                        'placeholder' => 'Eg. 7.5',
+                        'class' => 'form-control',
+                )))
+                ->add('password', 'text', array(
+                    'attr' => array(
+                        'value' => null,
+                        'class' => 'form-control',
+                )))
+                ->add('save', 'submit', array(
+                    'validation_groups' => false,
+                    'attr' => array(
+                    'class' => 'btn btn-default',
+                )))
                 ->getForm();
 
             $form->handleRequest($request);
 
             if ($request->isMethod('POST')) {
                 if ($form->isValid()) {
+
                     $doctrine->persist($user);
                     $doctrine->flush();
+
+                    $this->get('session')->getFlashBag()->add(
+                        'success',
+                        '<strong>' . $user->getFirstname() . ' ' . $user->getLastname() . '</strong> profile is updated.'
+                    );
 
                     return $this->redirect('/app_dev.php/admin/users');
                 }
@@ -49,7 +113,6 @@ class DefaultController extends Controller
 
             $rendered_form = $form->createView();
         }
-
 
         $users = $doctrine->getRepository('HarvesterFetchBundle:User')->findAll();
 

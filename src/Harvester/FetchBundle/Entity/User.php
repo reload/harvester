@@ -79,6 +79,13 @@ class User
     private $workingHours;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="password", type="string", nullable=true, options={"default": null})
+     */
+    private $password;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
@@ -266,6 +273,12 @@ class User
         return $this->isContractor;
     }
 
+    /**
+     * Set workingHours.
+     *
+     * @param $workingHours
+     * @return $this
+     */
     public function setWorkingHours($workingHours)
     {
         $this->workingHours = $workingHours;
@@ -273,10 +286,39 @@ class User
         return $this;
     }
 
-
+    /**
+     * Get workingHours.
+     *
+     * @return float
+     */
     public function getWorkingHours()
     {
         return $this->workingHours;
+    }
+
+    /**
+     * Set password.
+     *
+     * @param $password
+     * @return $this
+     */
+    public function setPassword($password)
+    {
+        if ($password !== null) {
+            $this->password = password_hash($password, PASSWORD_DEFAULT);
+
+            return $this;
+        }
+    }
+
+    /**
+     * Get password.
+     *
+     * @return string
+     */
+    public function getPassword()
+    {
+        return $this->password;
     }
 
     /**
