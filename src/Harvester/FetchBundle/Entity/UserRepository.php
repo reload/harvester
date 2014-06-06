@@ -5,7 +5,9 @@ namespace Harvester\FetchBundle\Entity;
 use Doctrine\ORM\EntityRepository;
 use DateTime;
 use Harvest_User;
+use Harvester\APIBundle\Controller\EntryController;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
  * UserRepository
@@ -15,6 +17,45 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class UserRepository extends EntityRepository
 {
+    /**
+     * Validate the token.
+     * @param EntryController $controller
+     * @param String $token
+     * @return user_id | JsonReponse object
+     */
+    static public function validateToken(EntryController $controller, $token = null)
+    {
+
+        // Split the token.
+        list($hash, $email) = explode('|', $token);
+
+        $repository = $controller->getDoctrine()
+            ->getRepository('HarvesterFetchBundle:User');
+
+        $query = $repository->createQueryBuilder('u')
+            ->where('u.email = :email')
+            ->andWhere('u.password = :password')
+            ->setParameter('email', $email)
+            ->setParameter('password', $hash)
+            ->getQuery();
+
+        $result = $query->getResult();
+
+        if ($result) {
+            // Set response to validated user id.
+            $response = $result[0]->getId();
+        }
+        else {
+            // Set response to 401 unauthorized.
+            $response = new JsonResponse(); // Construct a new JSON response
+            $response->setStatusCode(401); // Set unauthorized.
+            $response->setData(null);
+        }
+
+        return $response;
+    }
+
+
     /**
      * Create or update a Doctrine user object.
      *

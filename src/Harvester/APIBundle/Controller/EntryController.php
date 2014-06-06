@@ -15,6 +15,7 @@ use FOS\RestBundle\Controller\Annotations;
 use FOS\RestBundle\Controller\Annotations\QueryParam;
 use DateTime;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Harvester\FetchBundle\Entity\UserRepository;
 
 class EntryController extends FOSRestController
 {
@@ -58,11 +59,13 @@ class EntryController extends FOSRestController
      * @QueryParam(name="to", requirements="\d+", description="Date range to (timestamp)")
      * @QueryParam(name="month", requirements="\w+", description="Month (january, february ect.)")
      * @QueryParam(name="year", requirements="\d+", description="Year (2013, 2014)")
+     * @QueryParam(name="token", description="An authenticated user token")
      * @ApiDoc(
      *   section="Entry",
      *   description="Returns a collection of Entry",
      *   statusCodes={
      *     200="Returned when successful",
+     *     401="Unauthorized - The token is invalid",
      *     404="Returned when no data available",
      *   },
      *   requirements={
@@ -78,12 +81,23 @@ class EntryController extends FOSRestController
      */
     public function getEntriesAction(ParamFetcher $paramFetcher)
     {
+
         // Get GET Params from URL.
         $group = $paramFetcher->get('group');
         $from = $paramFetcher->get('from');
         $to = $paramFetcher->get('to');
         $month = $paramFetcher->get('month');
         $year = $paramFetcher->get('year');
+        $token = $paramFetcher->get('token');
+
+        // Validate user token, if set.
+        if (isset($token)) {
+            // token response is either an response object or a user id.
+            $token_response = UserRepository::validateToken($this, $token);
+            if (is_object($token_response) && $token_response->getStatusCode() == 401) {
+                return $token_response;
+            }
+        }
 
         // Set the default from / to dates.
         $date_from = new DateTime('first day of this month 00:00:00');
@@ -120,6 +134,12 @@ class EntryController extends FOSRestController
             ->where('e.spentAt >= :date_from AND e.spentAt < :date_to')
             ->setParameter('date_from', $date_from, \Doctrine\DBAL\Types\Type::DATETIME)
             ->setParameter('date_to', $date_to, \Doctrine\DBAL\Types\Type::DATETIME);
+
+        // Limit query to user if token_response is set.
+        if ($token_response) {
+            $query->andWhere('e.user = :user_id')
+                ->setParameter('user_id', $token_response);
+        }
 
         // Generate the query.
         $query_result = $query->getQuery()->getResult();
