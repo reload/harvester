@@ -26,22 +26,23 @@ class UserRepository extends EntityRepository
     static public function validateToken(EntryController $controller, $token = null)
     {
 
-        // Split the token.
-        list($hash, $email) = explode('|', $token);
+        if (strstr($token, '|')) {
+            // Split the token.
+            list($hash, $email) = explode('|', $token);
 
-        $repository = $controller->getDoctrine()
-            ->getRepository('HarvesterFetchBundle:User');
+            $repository = $controller->getDoctrine()
+                ->getRepository('HarvesterFetchBundle:User');
 
-        $query = $repository->createQueryBuilder('u')
-            ->where('u.email = :email')
-            ->andWhere('u.password = :password')
-            ->setParameter('email', $email)
-            ->setParameter('password', $hash)
-            ->getQuery();
+            $query = $repository->createQueryBuilder('u')
+                ->where('u.email = :email')
+                ->andWhere('u.password = :password')
+                ->setParameter('email', $email)
+                ->setParameter('password', $hash)
+                ->getQuery();
 
-        $result = $query->getResult();
-
-        if ($result) {
+            $result = $query->getResult();
+        }
+        if (isset($result)) {
             // Set response to validated user id.
             $response = $result[0]->getId();
         }
