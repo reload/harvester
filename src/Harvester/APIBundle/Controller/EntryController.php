@@ -81,6 +81,7 @@ class EntryController extends FOSRestController
      */
     public function getEntriesAction(ParamFetcher $paramFetcher)
     {
+        $token_response = null;
 
         // Get GET Params from URL.
         $group = $paramFetcher->get('group');
