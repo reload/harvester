@@ -42,7 +42,7 @@ class UserRepository extends EntityRepository
 
             $result = $query->getResult();
         }
-        if (isset($result)) {
+        if (isset($result) && count($result)) {
             // Set response to validated user id.
             $response = $result[0]->getId();
         }
