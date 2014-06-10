@@ -136,22 +136,13 @@ class EntryController extends FOSRestController
             ->setParameter('date_from', $date_from, \Doctrine\DBAL\Types\Type::DATETIME)
             ->setParameter('date_to', $date_to, \Doctrine\DBAL\Types\Type::DATETIME);
 
-        // Limit query to user if token_response is set.
-        if ($token_response) {
-            $query->andWhere('e.user = :user_id')
-                ->setParameter('user_id', $token_response);
-        }
-
-        // Generate the query.
-        $query_result = $query->getQuery()->getResult();
-
         // If group GET param is set, generate a Entry repository function name.
         if ($group) {
             $repository_function = 'groupBy' . ucfirst($group);
         }
 
         // Call the custom 'group' repository function.
-        $result = $repository->$repository_function($query, $query_result, $this->container->getParameter('default_hours_per_day'));
+        $result = $repository->$repository_function($query, $this->container->getParameter('default_hours_per_day'), $token_response);
 
         $callback = $this->getRequest()->get('callback'); // Check to see if callback parameter is in URL
 

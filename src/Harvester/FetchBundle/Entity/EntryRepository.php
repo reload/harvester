@@ -103,8 +103,18 @@ class EntryRepository extends EntityRepository
         $em->flush();
     }
 
-    public function groupByUser(\Doctrine\ORM\QueryBuilder $query, Array $query_result, $working_hours_per_day = null)
+    /**
+     * Group doctrine data by user.
+     *
+     * @param \Doctrine\ORM\QueryBuilder $query
+     * @param float $working_hours_per_day
+     * @param string $token
+     * @return array
+     */
+    public function groupByUser(\Doctrine\ORM\QueryBuilder $query, $working_hours_per_day = null, $token = null)
     {
+        $query_result = $query->getQuery()->getResult();
+
         // Fetch date range from query.
         $date_to = $query->getQuery()->getParameter('date_to');
         $date_from = $query->getQuery()->getParameter('date_from');
@@ -131,7 +141,7 @@ class EntryRepository extends EntityRepository
         }
 
         foreach ($user_entries as $user) {
-            $ranking[] = $this->parseRanking($user, $workingdays_to_now, $working_hours_per_day);
+            $ranking[] = $this->parseRanking($user, $workingdays_to_now, $working_hours_per_day, $token);
         }
 
         return array(
@@ -195,11 +205,21 @@ class EntryRepository extends EntityRepository
      * @param float $user_working_hours
      * @return array
      */
-    public function parseRanking(Array $user_entries, $workingdays_to_now, $user_working_hours = null)
+    public function parseRanking(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
     {
-        $hours = 0;
-
+        $hours = $billable = $illness = $holiday = false;
         foreach ($user_entries as $entry) {
+            if ($token == $entry->getUser()->getId()) {
+                if ($entry->getTasks()->getName() == 'Ferie' || $entry->getTasks()->getName() == 'Holder fri') {
+                    $holiday += $entry->getHours();
+                }
+                if ($entry->getTasks()->getName() == 'Sygdom') {
+                    $illness += $entry->getHours();
+                }
+                if ($entry->getTasks()->getBillableByDefault()) {
+                    $billable += $entry->getHours();
+                }
+            }
             $hours += $entry->getHours();
         }
 
@@ -212,14 +232,19 @@ class EntryRepository extends EntityRepository
         $split_user_id = str_split($user_id, 3);
 
         return array(
-            'group' => $this->determineRankingGroup($hours, $hours_goal),
-            'performance' => round($hours/$hours_goal*100),
-            'hours_goal' => $hours_goal,
-            'hours_registered' => $hours,
             'name' => $entry->getUser()->getFirstName(),
             'user_id_first_part' => $split_user_id[0],
             'user_id_second_part' => $split_user_id[1],
             'user_id_third_part' => $split_user_id[2],
+            'group' => $this->determineRankingGroup($hours, $hours_goal),
+            'performance' => round($hours/$hours_goal*100),
+            'hours_goal' => $hours_goal,
+            'hours_registered' => $hours,
+            'extra' => array(
+                'illness' =>  $illness ,
+                'holiday' =>  $holiday ,
+                'billable' =>  $billable ,
+            ),
         );
     }
 }
