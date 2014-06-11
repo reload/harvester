@@ -70,6 +70,10 @@ class DefaultController extends Controller
      */
     public function usersAction(Request $request, $user_id = null)
     {
+        $is_contractor = $request->query->get('contractor') ?: 0;
+        $is_active = $request->query->get('active') ?: 0;
+        $is_admin = $request->query->get('admin') ?: false;
+
         $rendered_form = false;
         $doctrine = $this->container->get('doctrine.orm.entity_manager');
 
@@ -114,7 +118,24 @@ class DefaultController extends Controller
             $rendered_form = $form->createView();
         }
 
-        $users = $doctrine->getRepository('HarvesterFetchBundle:User')->findAll();
+        $query = $doctrine->getRepository('HarvesterFetchBundle:User')
+            ->createQueryBuilder('u');
+
+        $query->where('u.isContractor = :is_contractor')
+            ->andWhere('u.isActive = :is_active')
+            ->setParameters(array(
+                'is_contractor' => $is_contractor,
+                'is_active' => $is_active,
+            ));
+
+        if ($is_admin) {
+            $query->andWhere('u.isAdmin = :is_admin')
+                ->setParameter('is_admin', $is_admin);
+        }
+
+        $users = $query
+            ->getQuery()
+            ->getResult();
 
         return array(
             'users' => $users,
