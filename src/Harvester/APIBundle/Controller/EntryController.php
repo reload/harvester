@@ -102,7 +102,7 @@ class EntryController extends FOSRestController
 
         // Set the default from / to dates.
         $date_from = new DateTime('first day of this month 00:00:00');
-        $date_to = new DateTime('last day of this month 23:59:59');
+        $date_to = new DateTime('yesterday 23:59:59');
 
         // If we're within the first 3 days of the month, and the first day is monday.
         if (date("w") == 1 && date("j") < 4) {
