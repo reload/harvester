@@ -207,14 +207,21 @@ class EntryRepository extends EntityRepository
      */
     public function parseRanking(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
     {
-        $hours = $billable = $illness = $holiday = false;
+        $hours = $billable = $holiday = false;
+        $illness['normal'] = $illness['child'] = false;
+
         foreach ($user_entries as $entry) {
             if ($token == $entry->getUser()->getId()) {
                 if ($entry->getTasks()->getName() == 'Ferie' || $entry->getTasks()->getName() == 'Holder fri') {
                     $holiday += $entry->getHours();
                 }
-                if ($entry->getTasks()->getName() == 'Sygdom') {
-                    $illness += $entry->getHours();
+                if ($entry->getTasks()->getName() == 'Sygdom' || $entry->getTasks()->getName() == 'Barns første sygedag') {
+                    if ($entry->getTasks()->getName() == 'Sygdom') {
+                        $illness['normal'] += $entry->getHours();
+                    }
+                    else {
+                        $illness['child'] += $entry->getHours();
+                    }
                 }
                 if ($entry->getTasks()->getBillableByDefault()) {
                     $billable += $entry->getHours();
