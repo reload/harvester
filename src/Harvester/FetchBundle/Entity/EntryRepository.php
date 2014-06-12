@@ -241,6 +241,9 @@ class EntryRepository extends EntityRepository
         $user_id = str_pad($entry->getUser()->getId(), 9, 0, STR_PAD_LEFT);
         $split_user_id = str_split($user_id, 3);
 
+        if ($illness['normal'] == false && $illness['child'] == false) {
+            $illness = false;
+        }
         return array(
             'name' => $entry->getUser()->getFirstName(),
             'user_id_first_part' => $split_user_id[0],
