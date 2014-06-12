@@ -207,7 +207,7 @@ class EntryRepository extends EntityRepository
      */
     public function parseRanking(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
     {
-        $hours = $billable = $holiday = false;
+        $hours = $billable = $holiday = $education = false;
         $illness['normal'] = $illness['child'] = false;
 
         foreach ($user_entries as $entry) {
@@ -222,6 +222,9 @@ class EntryRepository extends EntityRepository
                     else {
                         $illness['child'] += $entry->getHours();
                     }
+                }
+                if ($entry->getTasks()->getName() == 'Uddannelse/Kursus') {
+                    $education += $entry->getHours();
                 }
                 if ($entry->getTasks()->getBillableByDefault()) {
                     $billable += $entry->getHours();
@@ -248,9 +251,10 @@ class EntryRepository extends EntityRepository
             'hours_goal' => $hours_goal,
             'hours_registered' => $hours,
             'extra' => array(
-                'illness' =>  $illness ,
-                'holiday' =>  $holiday ,
-                'billable' =>  $billable ,
+                'billable' => $billable,
+                'education' => $education,
+                'holiday' => $holiday,
+                'illness' => $illness,
             ),
         );
     }
