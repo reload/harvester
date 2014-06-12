@@ -151,7 +151,7 @@ class User
     /**
      * Get firstName
      *
-     * @return string 
+     * @return string
      */
     public function getFirstName()
     {
@@ -174,7 +174,7 @@ class User
     /**
      * Get lastName
      *
-     * @return string 
+     * @return string
      */
     public function getLastName()
     {
@@ -197,7 +197,7 @@ class User
     /**
      * Get email
      *
-     * @return string 
+     * @return string
      */
     public function getEmail()
     {
@@ -220,7 +220,7 @@ class User
     /**
      * Get isActive
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getIsActive()
     {
@@ -243,7 +243,7 @@ class User
     /**
      * Get isAdmin
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getIsAdmin()
     {
@@ -266,7 +266,7 @@ class User
     /**
      * Get isContractor
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getIsContractor()
     {
@@ -305,7 +305,8 @@ class User
     public function setPassword($password)
     {
         if ($password !== null) {
-            $this->password = password_hash($password, PASSWORD_DEFAULT);
+            $options = ['salt' => md5('ReloadGotTime')];
+            $this->password = password_hash($password, PASSWORD_DEFAULT, $options);
 
             return $this;
         }
@@ -360,7 +361,7 @@ class User
     /**
      * Get createdAt
      *
-     * @return \DateTime 
+     * @return \DateTime
      */
     public function getCreatedAt()
     {
@@ -394,7 +395,7 @@ class User
     /**
      * Get entries
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getEntries()
     {
