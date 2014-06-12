@@ -171,7 +171,8 @@ class EntryRepository extends EntityRepository
                 ++$work_days;
             }
         }
-        return $work_days;
+        // Don't want to calculate today, since data isn't at 100%.
+        return $work_days-1;
     }
 
     /**
@@ -207,13 +208,18 @@ class EntryRepository extends EntityRepository
      */
     public function parseRanking(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
     {
-        $hours = $billable = $holiday = $education = false;
+        $hours = $billable = $education = $holiday = $vacation = false;
         $illness['normal'] = $illness['child'] = false;
+        $billability['raw'] = $billability['calculated'] = false;
 
+        // Loop through all user entries and calculate.
         foreach ($user_entries as $entry) {
-            if ($token == $entry->getUser()->getId()) {
-                if ($entry->getTasks()->getName() == 'Ferie' || $entry->getTasks()->getName() == 'Holder fri') {
+            if ($token == $entry->getUser()->getId() || 1) {
+                if ($entry->getTasks()->getName() == 'Helligdag') {
                     $holiday += $entry->getHours();
+                }
+                if ($entry->getTasks()->getName() == 'Ferie') {
+                    $vacation += $entry->getHours();
                 }
                 if ($entry->getTasks()->getName() == 'Sygdom' || $entry->getTasks()->getName() == 'Barns første sygedag') {
                     if ($entry->getTasks()->getName() == 'Sygdom') {
@@ -226,37 +232,53 @@ class EntryRepository extends EntityRepository
                 if ($entry->getTasks()->getName() == 'Uddannelse/Kursus') {
                     $education += $entry->getHours();
                 }
-                if ($entry->getTasks()->getBillableByDefault()) {
+                if ($entry->getTasks()->getBillableByDefault() && $entry->getProject()->getBillable()) {
                     $billable += $entry->getHours();
                 }
+                $hours += $entry->getHours();
             }
-            $hours += $entry->getHours();
         }
 
+        // Get default working hours per day for the user.
         if ($entry->getUser()->getWorkingHours() > 0) {
             $user_working_hours = $entry->getUser()->getWorkingHours();
         }
 
+        // Get the normed hours for this month.
         $hours_goal = $workingdays_to_now * $user_working_hours;
+
+        // Get the actual hours the user is working.
+        $working_hours = $hours - $vacation - $holiday;
+
+        // Calculate billability percent from the actual working hours.
+        $billability['calculated'] = round($billable/$working_hours * 100, 2);
+
+        // Calculate billability percent from total amount of hours.
+        $billability['raw'] = round($billable/$hours * 100, 2);
+
+        // Split user id, used for creating path to user avatar from Harvest!
         $user_id = str_pad($entry->getUser()->getId(), 9, 0, STR_PAD_LEFT);
         $split_user_id = str_split($user_id, 3);
 
+        // If no illness is registered, minimize output.
         if ($illness['normal'] == false && $illness['child'] == false) {
             $illness = false;
         }
+
         return array(
-            'name' => $entry->getUser()->getFirstName(),
+            'name' => $entry->getUser()->getFirstName() . ' ' . $entry->getUser()->getLastName(),
+            'group' => $this->determineRankingGroup($hours, $hours_goal),
+            'hours_goal' => $hours_goal,
+            'hours_registered' => $hours,
             'user_id_first_part' => $split_user_id[0],
             'user_id_second_part' => $split_user_id[1],
             'user_id_third_part' => $split_user_id[2],
-            'group' => $this->determineRankingGroup($hours, $hours_goal),
-            'performance' => round($hours/$hours_goal*100),
-            'hours_goal' => $hours_goal,
-            'hours_registered' => $hours,
             'extra' => array(
                 'billable' => $billable,
-                'education' => $education,
+                'billability' => $billability,
                 'holiday' => $holiday,
+                'education' => $education,
+                'vacation' => $vacation,
                 'illness' => $illness,
             ),
         );
