@@ -55,8 +55,8 @@ class EntryController extends FOSRestController
     /**
      * @Get("/entries")
      * @QueryParam(name="group", requirements="user | tasks | project", description="Group entries.")
-     * @QueryParam(name="from", requirements="\d+", description="Date range from (timestamp)")
-     * @QueryParam(name="to", requirements="\d+", description="Date range to (timestamp)")
+     * @QueryParam(name="from", requirements="\d+", description="Date range from (yyyymmdd)")
+     * @QueryParam(name="to", requirements="\d+", description="Date range to (yyyymmdd)")
      * @QueryParam(name="month", requirements="\w+", description="Month (january, february ect.)")
      * @QueryParam(name="year", requirements="\d+", description="Year (2013, 2014)")
      * @QueryParam(name="token", description="An authenticated user token")
@@ -119,10 +119,10 @@ class EntryController extends FOSRestController
 
         // If from/to is set, it overwrites month/year
         if ($from == true) {
-            $date_from = DateTime::createFromFormat('U', $from);
+            $date_from = DateTime::createFromFormat('Ymd', $from);
         }
         if ($to == true) {
-            $date_to = Datetime::createFromFormat('U', $to);
+            $date_to = Datetime::createFromFormat('Ymd', $to);
         }
 
         // Start query from entry table.
