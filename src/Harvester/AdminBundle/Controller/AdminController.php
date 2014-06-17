@@ -2,6 +2,7 @@
 
 namespace Harvester\AdminBundle\Controller;
 
+use Harvester\AdminBundle\AdminUserForm;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -11,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
-use Symfony\Component\Form\FormFactoryInterface;
+//use Symfony\Component\Form\FormFactoryInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Harvester\AdminBundle\AdminMailer;
 
@@ -21,14 +22,14 @@ use Harvester\AdminBundle\AdminMailer;
 class AdminController extends Controller
 {
     protected $doctrine;
-    protected $form_factory;
+    protected $form;
     protected $session;
     protected $mailer;
 
-    public function __construct(ManagerRegistry $doctrine, FormFactoryInterface $form_factory, SessionInterface $session, AdminMailer $mailer)
+    public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer)
     {
         $this->doctrine = $doctrine;
-        $this->form_factory = $form_factory;
+        $this->form = $form;
         $this->session = $session;
         $this->mailer = $mailer;
     }
@@ -86,28 +87,11 @@ class AdminController extends Controller
         if ($user_id == true) {
             $user = $this->doctrine->getRepository('HarvesterFetchBundle:User')->findOneById($user_id);
 
-            $form = $this->form_factory->createBuilder('form', $user)
-                ->add('workingHours', 'text', array(
-                    'attr' => array(
-                        'placeholder' => 'Eg. 7.5',
-                        'class' => 'form-control',
-                    )))
-                ->add('password', 'text', array(
-                    'attr' => array(
-                        'value' => null,
-                        'class' => 'form-control',
-                    )))
-                ->add('save', 'submit', array(
-                    'validation_groups' => false,
-                    'attr' => array(
-                        'class' => 'btn btn-default',
-                    )))
-                ->getForm();
+            $form = $this->form->createForm($user);
 
             $form->handleRequest($request);
 
-            if ($request->isMethod('POST')) {
-                if ($form->isValid()) {
+            if ($request->isMethod('POST') && $form->isValid()) {
 
                     $this->doctrine->getManager()->persist($user);
                     $this->doctrine->getManager()->flush();
@@ -118,7 +102,6 @@ class AdminController extends Controller
                     );
 
                     return $this->redirect('/app_dev.php/admin/users');
-                }
             }
 
             $rendered_form = $form->createView();

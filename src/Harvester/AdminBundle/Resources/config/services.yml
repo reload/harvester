@@ -6,13 +6,14 @@ services:
     class: %admin_controller.class%
     arguments:
       - @doctrine
-      - @form.factory
+      - @admin_user_form
       - @session
       - @admin_mailer
 
   admin_user_form:
     class: Harvester\AdminBundle\AdminUserForm
     arguments:
+      - @form.factory
 
   admin_mailer:
     class: Harvester\AdminBundle\AdminMailer
