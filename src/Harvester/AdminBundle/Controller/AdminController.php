@@ -78,6 +78,7 @@ class AdminController extends Controller
      */
     public function usersAction(Request $request, $user_id = null)
     {
+        $user = false;
         $is_contractor = $request->query->get('contractor') ?: 0;
         $is_active = $request->query->get('active') ?: 0;
         $is_admin = $request->query->get('admin') ?: false;
@@ -87,7 +88,7 @@ class AdminController extends Controller
         if ($user_id == true) {
             $user = $this->doctrine->getRepository('HarvesterFetchBundle:User')->findOneById($user_id);
 
-            $form = $this->form->createForm($user);
+            $form = $this->form->buildForm($user)->getForm();;
 
             $form->handleRequest($request);
 
@@ -127,6 +128,7 @@ class AdminController extends Controller
             ->getResult();
 
         return array(
+            'user' => $user,
             'users' => $users,
             'form' => $rendered_form,
         );
