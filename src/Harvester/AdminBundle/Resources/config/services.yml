@@ -1,0 +1,21 @@
+parameters:
+  admin_controller.class: Harvester\AdminBundle\Controller\AdminController
+
+services:
+  admin_controller:
+    class: %admin_controller.class%
+    arguments:
+      - @doctrine
+      - @form.factory
+      - @session
+      - @admin_mailer
+
+  admin_user_form:
+    class: Harvester\AdminBundle\AdminUserForm
+    arguments:
+
+  admin_mailer:
+    class: Harvester\AdminBundle\AdminMailer
+    arguments:
+      - @mailer
+      - @templating
