@@ -6,13 +6,9 @@ use Harvester\AdminBundle\AdminUserForm;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-
 use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
-//use Symfony\Component\Form\FormFactoryInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Harvester\AdminBundle\AdminMailer;
 
@@ -21,11 +17,32 @@ use Harvester\AdminBundle\AdminMailer;
  */
 class AdminController extends Controller
 {
+    /**
+     * @var \Doctrine\Common\Persistence\ManagerRegistry
+     */
     protected $doctrine;
+
+    /**
+     * @var \Harvester\AdminBundle\AdminUserForm
+     */
     protected $form;
+
+    /**
+     * @var \Symfony\Component\HttpFoundation\Session\SessionInterface
+     */
     protected $session;
+
+    /**
+     * @var \Harvester\AdminBundle\AdminMailer
+     */
     protected $mailer;
 
+    /**
+     * @param ManagerRegistry $doctrine
+     * @param AdminUserForm $form
+     * @param SessionInterface $session
+     * @param AdminMailer $mailer
+     */
     public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer)
     {
         $this->doctrine = $doctrine;
@@ -88,7 +105,7 @@ class AdminController extends Controller
         if ($user_id == true) {
             $user = $this->doctrine->getRepository('HarvesterFetchBundle:User')->findOneById($user_id);
 
-            $form = $this->form->buildForm($user)->getForm();;
+            $form = $this->form->buildForm($user)->getForm();
 
             $form->handleRequest($request);
 
@@ -108,24 +125,8 @@ class AdminController extends Controller
             $rendered_form = $form->createView();
         }
 
-        $query = $this->doctrine->getRepository('HarvesterFetchBundle:User')
-            ->createQueryBuilder('u');
-
-        $query->where('u.isContractor = :is_contractor')
-            ->andWhere('u.isActive = :is_active')
-            ->setParameters(array(
-                'is_contractor' => $is_contractor,
-                'is_active' => $is_active,
-            ));
-
-        if ($is_admin) {
-            $query->andWhere('u.isAdmin = :is_admin')
-                ->setParameter('is_admin', $is_admin);
-        }
-
-        $users = $query
-            ->getQuery()
-            ->getResult();
+        $users = $this->doctrine->getRepository('HarvesterFetchBundle:User')
+            ->getUserList($is_admin, $is_active, $is_contractor);
 
         return array(
             'user' => $user,

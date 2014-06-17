@@ -17,6 +17,36 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  */
 class UserRepository extends EntityRepository
 {
+
+    /**
+     * List of users.
+     *
+     * @param $is_admin
+     * @param $is_active
+     * @param $is_contractor
+     * @return array
+     */
+    public function getUserList($is_admin, $is_active, $is_contractor)
+    {
+        $query = $this->createQueryBuilder('u');
+
+        $query->where('u.isContractor = :is_contractor')
+            ->andWhere('u.isActive = :is_active')
+            ->setParameters(array(
+                'is_contractor' => $is_contractor,
+                'is_active' => $is_active,
+            ));
+
+        if ($is_admin) {
+            $query->andWhere('u.isAdmin = :is_admin')
+                ->setParameter('is_admin', $is_admin);
+        }
+
+        return $query
+            ->getQuery()
+            ->getResult();
+    }
+
     /**
      * Validate the token.
      * @param EntryController $controller
