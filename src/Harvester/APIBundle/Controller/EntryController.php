@@ -55,8 +55,8 @@ class EntryController extends FOSRestController
     /**
      * @Get("/entries")
      * @QueryParam(name="group", requirements="user | tasks | project", description="Group entries.")
-     * @QueryParam(name="from", requirements="\d+", description="Date range from (yyyymmdd)")
-     * @QueryParam(name="to", requirements="\d+", description="Date range to (yyyymmdd)")
+     * @QueryParam(name="from", requirements="\d+", description="Date range from (yyyymmdd). (Overwrites month, year if set).")
+     * @QueryParam(name="to", requirements="\d+", description="Date range to (yyyymmdd). (Overwrites month, year if set).")
      * @QueryParam(name="month", requirements="\w+", description="Month (january, february ect.)")
      * @QueryParam(name="year", requirements="\d+", description="Year (2013, 2014)")
      * @QueryParam(name="token", description="An authenticated user token")
