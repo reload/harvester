@@ -9,6 +9,7 @@ services:
       - @admin_user_form
       - @session
       - @admin_mailer
+      - @router
 
   admin_user_form:
     class: Harvester\AdminBundle\AdminUserForm

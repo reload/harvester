@@ -2,20 +2,21 @@
 
 namespace Harvester\AdminBundle\Controller;
 
-use Harvester\AdminBundle\AdminUserForm;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Harvester\AdminBundle\AdminMailer;
+use Harvester\AdminBundle\AdminUserForm;
 
 /**
  * @Route(service="admin_controller")
  */
-class AdminController extends Controller
+class AdminController
 {
     /**
      * @var \Doctrine\Common\Persistence\ManagerRegistry
@@ -38,17 +39,23 @@ class AdminController extends Controller
     protected $mailer;
 
     /**
+     * @var \Symfony\Component\Routing\Router
+     */
+    protected $router;
+
+    /**
      * @param ManagerRegistry $doctrine
      * @param AdminUserForm $form
      * @param SessionInterface $session
      * @param AdminMailer $mailer
      */
-    public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer)
+    public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer, RouterInterface $router)
     {
         $this->doctrine = $doctrine;
         $this->form = $form;
         $this->session = $session;
         $this->mailer = $mailer;
+        $this->router = $router;
     }
 
     /**
@@ -84,9 +91,9 @@ class AdminController extends Controller
                     'New password for <strong>' . $user->getFirstname() . ' ' . $user->getLastname() . '</strong> is generated.'
                 );
             }
-
         }
-        return $this->redirect('/app_dev.php/admin/users');
+        
+        return new RedirectResponse($this->router->generate('_useredit'));
     }
 
     /**
@@ -110,7 +117,6 @@ class AdminController extends Controller
             $form->handleRequest($request);
 
             if ($request->isMethod('POST') && $form->isValid()) {
-
                     $this->doctrine->getManager()->persist($user);
                     $this->doctrine->getManager()->flush();
 
@@ -119,7 +125,7 @@ class AdminController extends Controller
                         '<strong>' . $user->getFirstname() . ' ' . $user->getLastname() . '</strong> profile is updated.'
                     );
 
-                    return $this->redirect('/app_dev.php/admin/users');
+                return new RedirectResponse($this->router->generate('_useredit'));
             }
 
             $rendered_form = $form->createView();
