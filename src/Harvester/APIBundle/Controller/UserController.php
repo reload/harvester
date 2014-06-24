@@ -43,7 +43,7 @@ class UserController extends FOSRestController implements ClassResourceInterface
     /**
      * @ApiDoc(
      *   section="Users",
-     *   description="Autheticate user",
+     *   description="Authenticate user",
      *   statusCodes={
      *     200="Returned when authenticated",
      *     401="Returned when authentication failed",
