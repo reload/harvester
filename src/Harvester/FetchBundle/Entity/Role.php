@@ -3,10 +3,13 @@ namespace Harvester\FetchBundle\Entity;
 
 use Symfony\Component\Security\Core\Role\RoleInterface;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\ExclusionPolicy;
+use JMS\Serializer\Annotation\Expose;
 
 /**
  * @ORM\Entity
  * @ORM\Table(name="Roles")
+ * @ExclusionPolicy("all")
  */
 class Role implements RoleInterface
 {
@@ -24,8 +27,10 @@ class Role implements RoleInterface
 
     /**
      * @ORM\Column(name="role", type="string", length=20, unique=true)
+     * @Expose
      */
     private $role;
+
     /**
      * @ORM\ManyToMany(targetEntity="User", mappedBy="roles")
      */

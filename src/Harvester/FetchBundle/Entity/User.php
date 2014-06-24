@@ -108,6 +108,7 @@ class User implements AdvancedUserInterface
     /**
      * @ORM\ManyToMany(targetEntity="Role", inversedBy="users")
      * @ORM\JoinTable(name="User_Roles")
+     * @Expose
      */
     protected $userRoles;
 
@@ -122,7 +123,7 @@ class User implements AdvancedUserInterface
      */
     public function getSalt()
     {
-        return 'ReloadGotTime';
+        return true;
     }
 
     /**
@@ -463,7 +464,8 @@ class User implements AdvancedUserInterface
      */
     public function getRoles()
     {
-        $roles = [];
+        // Set default role for an authenticated user.
+        $roles = ['ROLE_USER'];
 
         foreach ($this->userRoles as $role) {
             $roles[] = $role->getName();
