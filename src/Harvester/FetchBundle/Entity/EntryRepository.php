@@ -210,9 +210,9 @@ class EntryRepository extends EntityRepository
      */
     public function parseRanking(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
     {
-        $hours = $billable = $education = $holiday = $vacation = false;
-        $illness['normal'] = $illness['child'] = false;
-        $billability['raw'] = $billability['calculated'] = false;
+        $hours = $billable = $education = $holiday = $vacation = 0;
+        $illness['normal'] = $illness['child'] = 0;
+        $billability['raw'] = $billability['calculated'] = 0;
         $extra = [];
 
         // Loop through all user entries and calculate.
