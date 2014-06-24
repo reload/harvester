@@ -475,6 +475,22 @@ class User implements AdvancedUserInterface
     }
 
     /**
+     * Check if user has role.
+     *
+     * @param string $role
+     * @return bool
+     */
+    public function hasRole($role = null)
+    {
+        foreach ($this->getRoles() as $userRole) {
+            if ($userRole == $role) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Add userRoles
      *
      * @param \Harvester\FetchBundle\Entity\Role $userRoles

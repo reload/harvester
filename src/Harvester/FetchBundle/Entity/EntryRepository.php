@@ -13,6 +13,7 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
+
 /**
  * EntryRepository
  *
@@ -21,6 +22,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class EntryRepository extends EntityRepository
 {
+
     /**
      * Register the new Entry.
      *
@@ -211,10 +213,11 @@ class EntryRepository extends EntityRepository
         $hours = $billable = $education = $holiday = $vacation = false;
         $illness['normal'] = $illness['child'] = false;
         $billability['raw'] = $billability['calculated'] = false;
+        $extra = [];
 
         // Loop through all user entries and calculate.
         foreach ($user_entries as $entry) {
-            if ($token == $entry->getUser()->getId() || 1) {
+            if ($token == $entry->getUser()->getId() || ($token == $entry->getUser()->getId() && $entry->getUser()->hasRole('ROLE_ADMIN'))) {
                 if ($entry->getTasks()->getName() == 'Helligdag') {
                     $holiday += $entry->getHours();
                 }
@@ -247,22 +250,32 @@ class EntryRepository extends EntityRepository
         // Get the normed hours for this month.
         $hours_goal = $workingdays_to_now * $user_working_hours;
 
-        // Get the actual hours the user is working.
-        $working_hours = $hours - $vacation - $holiday;
-
-        // Calculate billability percent from the actual working hours.
-        $billability['calculated'] = round($billable/$working_hours * 100, 2);
-
-        // Calculate billability percent from total amount of hours.
-        $billability['raw'] = round($billable/$hours * 100, 2);
-
         // Split user id, used for creating path to user avatar from Harvest!
         $user_id = str_pad($entry->getUser()->getId(), 9, 0, STR_PAD_LEFT);
         $split_user_id = str_split($user_id, 3);
 
-        // If no illness is registered, minimize output.
-        if ($illness['normal'] == false && $illness['child'] == false) {
-            $illness = false;
+        // Get the actual hours the user is working.
+        $working_hours = $hours - $vacation - $holiday;
+
+        if ($token == $entry->getUser()->getId() || ($token == $entry->getUser()->getId() && $entry->getUser()->hasRole('ROLE_ADMIN'))) {
+            // Calculate billability percent from the actual working hours.
+            $billability['calculated'] = round($billable / $working_hours * 100, 2);
+
+            // Calculate billability percent from total amount of hours.
+            $billability['raw'] = round($billable / $hours * 100, 2);
+
+            // If no illness is registered, minimize output.
+            if ($illness['normal'] == false && $illness['child'] == false) {
+                $illness = false;
+            }
+            $extra = array(
+                'billable' => $billable,
+                'billability' => $billability,
+                'holiday' => $holiday,
+                'education' => $education,
+                'vacation' => $vacation,
+                'illness' => $illness,
+            );
         }
 
         return array(
@@ -270,17 +283,8 @@ class EntryRepository extends EntityRepository
             'group' => $this->determineRankingGroup($hours, $hours_goal),
             'hours_goal' => $hours_goal,
             'hours_registered' => $hours,
-            'user_id_first_part' => $split_user_id[0],
-            'user_id_second_part' => $split_user_id[1],
-            'user_id_third_part' => $split_user_id[2],
-            'extra' => array(
-                'billable' => $billable,
-                'billability' => $billability,
-                'holiday' => $holiday,
-                'education' => $education,
-                'vacation' => $vacation,
-                'illness' => $illness,
-            ),
+            'converted_user_id' => implode('/', $split_user_id),
+            'extra' => $extra,
         );
     }
 }

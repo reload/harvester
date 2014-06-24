@@ -79,7 +79,6 @@ class UserRepository extends EntityRepository implements UserProviderInterface
         return $this->getEntityName() === $class
         || is_subclass_of($class, $this->getEntityName());
     }
-
     /**
      * List of users.
      *
@@ -117,7 +116,6 @@ class UserRepository extends EntityRepository implements UserProviderInterface
      */
     static public function validateToken(EntryController $controller, $token = null)
     {
-
         if (strstr($token, '|')) {
             // Split the token.
             list($hash, $email) = explode('|', $token);
