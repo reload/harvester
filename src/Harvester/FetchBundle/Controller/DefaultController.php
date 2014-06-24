@@ -18,11 +18,12 @@ class DefaultController extends Controller
     {
         $entries = $user = array();
 
-        if (!empty($user_id)) {
+        if (!empty($user_id) && is_numeric($user_id)) {
             $user = $this->getDoctrine()->getRepository('HarvesterFetchBundle:User')->find($user_id);
 
             $entries = $user->getEntries();
         }
+
         return array(
             'user' => $user,
             'entries' =>$entries,

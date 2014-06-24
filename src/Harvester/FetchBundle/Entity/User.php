@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation\ExclusionPolicy;
 use JMS\Serializer\Annotation\Expose;
+use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 
 /**
  * User
@@ -14,7 +15,7 @@ use JMS\Serializer\Annotation\Expose;
  * @ORM\Entity(repositoryClass="Harvester\FetchBundle\Entity\UserRepository")
  * @ExclusionPolicy("all")
  */
-class User
+class User implements AdvancedUserInterface
 {
     /**
      * @var integer
@@ -105,11 +106,65 @@ class User
     protected $entries;
 
     /**
-     * Constructor.
+     * @ORM\ManyToMany(targetEntity="Role", inversedBy="users")
+     * @ORM\JoinTable(name="User_Roles")
      */
+    protected $userRoles;
+
     public function __construct()
     {
         $this->entries = new ArrayCollection();
+        $this->userRoles = new ArrayCollection();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getSalt()
+    {
+        return 'ReloadGotTime';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUsername()
+    {
+        return $this->getEmail();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function eraseCredentials() {}
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isAccountNonExpired()
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isAccountNonLocked() {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isCredentialsNonExpired() {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isEnabled() {
+        return true;
     }
 
     /**
@@ -368,7 +423,6 @@ class User
         return $this->createdAt;
     }
 
-
     /**
      * Add entries
      *
@@ -400,5 +454,54 @@ class User
     public function getEntries()
     {
         return $this->entries;
+    }
+
+    /**
+     * Get roles
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRoles()
+    {
+        $roles = [];
+
+        foreach ($this->userRoles as $role) {
+            $roles[] = $role->getName();
+        }
+
+        return $roles;
+    }
+
+    /**
+     * Add userRoles
+     *
+     * @param \Harvester\FetchBundle\Entity\Role $userRoles
+     * @return User
+     */
+    public function addUserRole(\Harvester\FetchBundle\Entity\Role $userRoles)
+    {
+        $this->userRoles[] = $userRoles;
+
+        return $this;
+    }
+
+    /**
+     * Remove userRoles
+     *
+     * @param \Harvester\FetchBundle\Entity\Role $userRoles
+     */
+    public function removeUserRole(\Harvester\FetchBundle\Entity\Role $userRoles)
+    {
+        $this->userRoles->removeElement($userRoles);
+    }
+
+    /**
+     * Get userRoles
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getUserRoles()
+    {
+        return $this->userRoles;
     }
 }

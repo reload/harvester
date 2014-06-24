@@ -16,3 +16,9 @@ harvester_fetch:
 NelmioApiDocBundle:
     resource: "@NelmioApiDocBundle/Resources/config/routing.yml"
     prefix:   /api/doc
+
+login_check:
+    pattern: /login_check
+
+logout:
+    pattern: /logout

@@ -4,10 +4,12 @@ namespace Harvester\AdminBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Core\SecurityContext;
 use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Harvester\AdminBundle\AdminMailer;
@@ -44,18 +46,26 @@ class AdminController
     protected $router;
 
     /**
+     * @var \Symfony\Bundle\FrameworkBundle\Templating\EngineInterface
+     */
+    protected $templating;
+
+    /**
      * @param ManagerRegistry $doctrine
      * @param AdminUserForm $form
      * @param SessionInterface $session
      * @param AdminMailer $mailer
+     * @param RouterInterface $router
+     * @param EngineInterface $templating
      */
-    public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer, RouterInterface $router)
+    public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer, RouterInterface $router, EngineInterface $templating)
     {
         $this->doctrine = $doctrine;
         $this->form = $form;
         $this->session = $session;
         $this->mailer = $mailer;
         $this->router = $router;
+        $this->templating = $templating;
     }
 
     /**
@@ -65,6 +75,35 @@ class AdminController
     public function indexAction()
     {
         return array();
+    }
+
+    /**
+     * @Route("/login_check", name="_admin_login_check")
+     */
+    public function loginCheckAction() {}
+
+    /**
+     * @Route("/login", name="_admin_login")
+     */
+    public function loginAction(Request $request)
+    {
+        $session = $request->getSession();
+
+        // get the login error if there is one
+        if ($request->attributes->has(SecurityContext::AUTHENTICATION_ERROR)) {
+            $error = $request->attributes->get(
+                SecurityContext::AUTHENTICATION_ERROR
+            );
+        }
+        else {
+            $error = $session->get(SecurityContext::AUTHENTICATION_ERROR);
+            $session->remove(SecurityContext::AUTHENTICATION_ERROR);
+        }
+
+        return $this->templating->renderResponse('HarvesterAdminBundle:Admin:login.html.twig', array(
+            'last_username' => $request->getSession()->get(SecurityContext::LAST_USERNAME),
+            'error'         => $error
+        ));
     }
 
     /**
@@ -92,7 +131,7 @@ class AdminController
                 );
             }
         }
-        
+
         return new RedirectResponse($this->router->generate('_useredit'));
     }
 
