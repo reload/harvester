@@ -34,11 +34,11 @@ class EntryRepository extends EntityRepository
     {
         $count_new_entries = $count_updated_entries = 0;
         foreach ($user_entries->get('data') as $user_entry) {
+
             $entry = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Entry')->findOneById($user_entry->get('id'));
 
             if (!$entry) {
-                $entry = new Entry();
-                $this->saveEntry($entry, $user_entry, $api);
+                $this->saveEntry(new Entry(), $user_entry, $api);
                 if (!$count_new_entries) {
                     $output->writeln('<info>--> Entries created.</info>');
                     ++$count_new_entries;
@@ -238,8 +238,8 @@ class EntryRepository extends EntityRepository
                 if ($entry->getTasks()->getBillableByDefault() && $entry->getProject()->getBillable()) {
                     $billable += $entry->getHours();
                 }
-                $hours += $entry->getHours();
             }
+            $hours += $entry->getHours();
         }
 
         // Get default working hours per day for the user.
