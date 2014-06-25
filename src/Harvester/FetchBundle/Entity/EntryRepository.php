@@ -3,13 +3,10 @@
 namespace Harvester\FetchBundle\Entity;
 
 use Doctrine\ORM\EntityRepository;
-use Harvester\FetchBundle\Entity\User;
-use Harvester\FetchBundle\Entity\Project;
 use Harvest_Result;
 use Harvest_DayEntry;
 use HarvestReports;
 use DateTime;
-use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
