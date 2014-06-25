@@ -214,10 +214,15 @@ class EntryRepository extends EntityRepository
         $illness['normal'] = $illness['child'] = 0;
         $billability['raw'] = $billability['calculated'] = 0;
         $extra = [];
+        $user = false;
+
+        if ($token) {
+            $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($token);
+        }
 
         // Loop through all user entries and calculate.
         foreach ($user_entries as $entry) {
-            if ($token == $entry->getUser()->getId() || ($token == $entry->getUser()->getId() && $entry->getUser()->hasRole('ROLE_ADMIN'))) {
+            if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
                 if ($entry->getTasks()->getName() == 'Helligdag') {
                     $holiday += $entry->getHours();
                 }
@@ -257,7 +262,7 @@ class EntryRepository extends EntityRepository
         // Get the actual hours the user is working.
         $working_hours = $hours - $vacation - $holiday;
 
-        if ($token == $entry->getUser()->getId() || ($token == $entry->getUser()->getId() && $entry->getUser()->hasRole('ROLE_ADMIN'))) {
+        if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
             // Calculate billability percent from the actual working hours.
             $billability['calculated'] = round($billable / $working_hours * 100, 2);
 
