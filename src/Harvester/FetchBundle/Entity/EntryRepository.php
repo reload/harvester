@@ -120,6 +120,10 @@ class EntryRepository extends EntityRepository
 
         $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U')+7200, time());
 
+        if (date('Ymd', time()) !== $date_to->getValue()->format('Ymd')) {
+            $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U')+7200, $date_to->getValue()->format('U')+7200);
+        }
+
         $hours = 0;
         $hours_in_range = null;
         $hours_to_today = null;
