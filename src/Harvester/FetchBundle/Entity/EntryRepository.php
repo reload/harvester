@@ -118,11 +118,7 @@ class EntryRepository extends EntityRepository
         $date_to = $query->getQuery()->getParameter('date_to');
         $date_from = $query->getQuery()->getParameter('date_from');
 
-        $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U')+7200, time());
 
-        if (date('Ymd', time()) !== $date_to->getValue()->format('Ymd')) {
-            $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U')+7200, $date_to->getValue()->format('U')+7200);
-        }
 
         $hours = 0;
         $hours_in_range = null;
@@ -135,7 +131,6 @@ class EntryRepository extends EntityRepository
                 if (!array_key_exists($row->getUser()->getId(), $old_user) || count($old_user) == 0) {
                     $working_hours = $row->getUser()->getWorkingHours() != 0 ? $row->getUser()->getWorkingHours() : 7.5;
                     $hours_in_range += $working_hours * $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), $date_to->getValue()->format('U'));
-                    $hours_to_today += $working_hours * $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), time());
                     $old_user[$row->getUser()->getId()] = true;
                 }
                 $hours += $row->getHours();
@@ -143,17 +138,22 @@ class EntryRepository extends EntityRepository
             }
         }
 
+        $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), time());
+
+        if (date('Ymd', time()) !== $date_to->getValue()->format('Ymd')) {
+            $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), $date_to->getValue()->format('U'));
+        }
+
         foreach ($user_entries as $user) {
             $ranking[] = $this->parseRanking($user, $workingdays_to_now, $working_hours_per_day, $token);
         }
 
         return array(
-            'succes' => ($query_result ? true : false),
+            'success' => ($query_result ? true : false),
             'ranking' => $ranking,
             'date_start' => $date_from->getValue()->format('U'),
             'date_end' => $date_to->getValue()->format('U'),
-            'hours_until_today' => $hours_to_today,
-            'hours_total_month' => $hours_in_range,
+            'hours_in_range' => $hours_in_range,
             'hours_total_registered' => $hours,
         );
     }
@@ -174,8 +174,8 @@ class EntryRepository extends EntityRepository
                 ++$work_days;
             }
         }
-        // Don't want to calculate today, since data isn't at 100%.
-        return $work_days-1;
+
+        return $work_days+1;
     }
 
     /**

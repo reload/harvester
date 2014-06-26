@@ -108,16 +108,19 @@ class EntryController extends FOSRestController
 
         // If the month and year params is set.
         if ($month && $year) {
-            $date_from = new DateTime('first day of ' . $month . ' ' . $year);
+            $date_from = new DateTime('first day of ' . $month . ' ' . $year . '00:00:00');
             $date_to = new DateTime('last day of ' . $month . ' ' . $year . '23:59:59');
         }
 
         // If from/to is set, it overwrites month/year
         if ($from == true) {
-            $date_from = DateTime::createFromFormat('Ymd', $from);
+            // Set time to 00:00:00 on object.
+            $date_from = DateTime::createFromFormat('Ymd', $from)->setTime(0,0,0);
         }
+
         if ($to == true) {
-            $date_to = Datetime::createFromFormat('Ymd', $to);
+            // Set time to 23:59:59 on object.
+            $date_to = Datetime::createFromFormat('Ymd', $to)->setTime(23,59,59);
         }
 
         // Start query from entry table.
