@@ -118,8 +118,6 @@ class EntryRepository extends EntityRepository
         $date_to = $query->getQuery()->getParameter('date_to');
         $date_from = $query->getQuery()->getParameter('date_from');
 
-
-
         $hours = 0;
         $hours_in_range = null;
         $hours_to_today = null;
@@ -179,15 +177,21 @@ class EntryRepository extends EntityRepository
      */
     public function calcWorkingDaysInRange($from, $to)
     {
+        // If we only want to fetch one day.
+        if ($from > $to-86400) {
+            return 1;
+        }
+
         $work_days = 0;
-        for ($i = $from; $i < $to; $i += 86400) {
+
+        for ($i = $from; $i <= $to; $i += 86400) {
             $tmp_day = Datetime::createFromFormat('U', $i);
             if ($tmp_day->format('N') < 6) {
                 ++$work_days;
             }
         }
 
-        return $work_days+1;
+        return $work_days;
     }
 
     /**
@@ -286,6 +290,7 @@ class EntryRepository extends EntityRepository
             if ($illness['normal'] == false && $illness['child'] == false) {
                 $illness = false;
             }
+
             $extra = array(
                 'billable' => $billable,
                 'billability' => $billability,
