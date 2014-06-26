@@ -25,12 +25,12 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 'from-date',
                 InputArgument::OPTIONAL,
                 "'From' date. (yyyymmdd)",
-                $date_from->format('Y-m-d'))
+                $date_from->format('Ymd'))
             ->addArgument(
                 'to-date',
                 InputArgument::OPTIONAL,
                 "'To' date. (yyyymmdd)",
-                $date_to->format('Y-m-d'))
+                $date_to->format('Ymd'))
             ->addOption(
                 'all-users',
                 null,
