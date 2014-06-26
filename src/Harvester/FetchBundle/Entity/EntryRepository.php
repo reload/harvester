@@ -148,6 +148,11 @@ class EntryRepository extends EntityRepository
             $ranking[] = $this->parseRanking($user, $workingdays_to_now, $working_hours_per_day, $token);
         }
 
+        // Get the first registered entry.
+        $first_entry_object = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Entry')->findOneBy(array(), array(
+            'spentAt' => 'ASC',
+        ));
+
         return array(
             'success' => ($query_result ? true : false),
             'ranking' => $ranking,
@@ -155,6 +160,13 @@ class EntryRepository extends EntityRepository
             'date_end' => $date_to->getValue()->format('U'),
             'hours_in_range' => $hours_in_range,
             'hours_total_registered' => $hours,
+            'misc' => array(
+                'first_entry' => array(
+                    'year' => $first_entry_object->getSpentAt()->format('Y'),
+                    'day' => $first_entry_object->getSpentAt()->format('d'),
+                    'month' => $first_entry_object->getSpentAt()->format('m'),
+                ),
+            ),
         );
     }
 
