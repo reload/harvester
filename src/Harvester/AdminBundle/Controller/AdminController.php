@@ -69,7 +69,7 @@ class AdminController
     }
 
     /**
-     * @Route("/admin/")
+     * @Route("/admin/", name="_admin_index")
      * @Template()
      */
     public function indexAction()
