@@ -302,7 +302,9 @@ class EntryRepository extends EntityRepository
         }
 
         return array(
-            'name' => $entry->getUser()->getFirstName() . ' ' . $entry->getUser()->getLastName(),
+            'first_name' => $entry->getUser()->getFirstName(),
+            'last_name' => $entry->getUser()->getLastName(),
+            'full_name' => $entry->getUser()->getFirstName() . ' ' . $entry->getUser()->getLastName(),
             'group' => $this->determineRankingGroup($hours, $hours_goal),
             'hours_goal' => $hours_goal,
             'hours_registered' => $hours,
