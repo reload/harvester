@@ -204,6 +204,19 @@ class UserRepository extends EntityRepository implements UserProviderInterface
         // Get Role 'ROLE_ADMIN' Object from Role table.
         $userRole = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Role')->findOneByName('ROLE_ADMIN');
 
+        // If 'ROLE_ADMIN' doesn't exists, create it.
+        if (!$userRole) {
+            $userRole = new Role();
+
+            $userRole
+                ->setName('ROLE_ADMIN')
+                ->setRole('ROLE_ADMIN');
+
+            $em = $this->getEntityManager();
+            $em->persist($userRole);
+            $em->flush();
+        }
+
         // If the user is admin and don't have admin role set in db.
         if ($user->getIsAdmin() == true && !$user->hasRole('ROLE_ADMIN')) {
             // Add ROLE_ADMIN to the user.
