@@ -143,7 +143,7 @@ class AdminController
     {
         $user = false;
         $is_contractor = $request->query->get('contractor') ?: 0;
-        $is_active = $request->query->get('active') ?: 0;
+        $is_active = $request->query->get('active') ?: 1;
         $is_admin = $request->query->get('admin') ?: false;
 
         $rendered_form = false;

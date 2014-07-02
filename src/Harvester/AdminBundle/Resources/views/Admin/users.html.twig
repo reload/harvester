@@ -3,7 +3,7 @@
 {% block body %}
 
     <ol class="breadcrumb">
-        <li><a href="{{ path('_useredit', {'active': 1}) }}">Internal</a></li>
+        <li><a href="{{ path('_useredit') }}">Internal</a></li>
         <li><a href="{{ path('_useredit', {'contractor': 1}) }}">Contractors</a></li>
         <li><a href="{{ path('_useredit', {'admin': 1, 'active': 1}) }}">Admins</a></li>
         <li><a href="{{ path('_useredit', {'active': 0}) }}">Inactive</a></li>
