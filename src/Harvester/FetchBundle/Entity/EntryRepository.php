@@ -280,11 +280,13 @@ class EntryRepository extends EntityRepository
         $working_hours = $hours - $vacation - $holiday;
 
         if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
-            // Calculate billability percent from the actual working hours.
-            $billability['calculated'] = round($billable / $working_hours * 100, 2);
+            if ($billable && $working_hours) {
+                // Calculate billability percent from the actual working hours.
+                $billability['calculated'] = round($billable / $working_hours * 100, 2);
 
-            // Calculate billability percent from total amount of hours.
-            $billability['raw'] = round($billable / $hours * 100, 2);
+                // Calculate billability percent from total amount of hours.
+                $billability['raw'] = round($billable / $hours * 100, 2);
+            }
 
             // If no illness is registered, minimize output.
             if ($illness['normal'] == false && $illness['child'] == false) {
