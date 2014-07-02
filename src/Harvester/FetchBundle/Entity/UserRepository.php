@@ -6,6 +6,8 @@ use Doctrine\ORM\EntityRepository;
 use DateTime;
 use Harvest_User;
 use Harvester\APIBundle\Controller\EntryController;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -146,21 +148,22 @@ class UserRepository extends EntityRepository implements UserProviderInterface
         return $response;
     }
 
-
     /**
      * Create or update a Doctrine user object.
      *
-     * @param \Harvest_User $harvest_user
-     * @param $output
+     * @param Harvest_User $harvest_user
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return User
      */
-    public function registerUser(Harvest_User $harvest_user, OutputInterface $output)
+    public function registerUser(Harvest_User $harvest_user, InputInterface $input, OutputInterface $output)
     {
         $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($harvest_user->id);
 
         // Create user.
         if (!$user) {
             $user = new User;
-            $this->saveUser($user, $harvest_user);
+            $this->saveUser($user, $harvest_user, $input, $output);
             $output->writeln('<info> --> created.</info>');
         }
         else {
@@ -169,7 +172,7 @@ class UserRepository extends EntityRepository implements UserProviderInterface
             // Check if user is updated in the Harvest API.
             if ($user->getUpdatedAt()->getTimestamp() < $user_last_update->getTimestamp() - 7200) {
                 // Update user.
-                $this->saveUser($user, $harvest_user);
+                $this->saveUser($user, $harvest_user, $input, $output);
                 $output->writeln('<comment>--> updated.</comment>');
             }
         }
@@ -181,10 +184,12 @@ class UserRepository extends EntityRepository implements UserProviderInterface
      * Save Harvest_User to database.
      *
      * @param User $user
-     * @param Harvest_User $harvest_user.
-     * @return User $user
+     * @param Harvest_User $harvest_user
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     * @return User
      */
-    public function saveUser(User $user, Harvest_User $harvest_user)
+    public function saveUser(User $user, Harvest_User $harvest_user, InputInterface $input, OutputInterface $output)
     {
         $user->setId($harvest_user->id);
         $user->setFirstName($harvest_user->get('first-name'));
@@ -195,6 +200,22 @@ class UserRepository extends EntityRepository implements UserProviderInterface
         $user->setIsAdmin($harvest_user->get('is-admin') == 'true' ? 1 : 0);
         $user->setIsContractor($harvest_user->get('is-contractor') == 'true' ? 1 : 0);
         $user->setUpdatedAt(new DateTime($harvest_user->get('updated-at')));
+
+        // Get Role 'ROLE_ADMIN' Object from Role table.
+        $userRole = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Role')->findOneByName('ROLE_ADMIN');
+
+        // If the user is admin and don't have admin role set in db.
+        if ($user->getIsAdmin() == true && !$user->hasRole('ROLE_ADMIN')) {
+            // Add ROLE_ADMIN to the user.
+            $user->addUserRole($userRole);
+            $output->writeln('<comment>--> Admin role added.</comment>');
+        }
+        // If the user isn't admin, and has the ROLE_ADMIN and we aren't preserving the roles.
+        elseif ($user->getIsAdmin() == false && $user->hasRole('ROLE_ADMIN') && !$input->getOption('preserve-roles')) {
+            // Remove ROLE_ADMIN from user.
+            $user->removeUserRole($userRole);
+            $output->writeln('<comment>--> Admin role removed.</comment>');
+        }
 
         $em = $this->getEntityManager();
         $em->persist($user);

@@ -35,7 +35,13 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 'all-users',
                 null,
                 InputOption::VALUE_NONE,
-                'If set, both active and inactive users will be fetched');
+                'If set, both active and inactive users will be fetched')
+            ->addOption(
+                'preserve-roles',
+                null,
+                InputOption::VALUE_NONE,
+                'If set, preserve the admin roles set on the user, add role to new users'
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -61,7 +67,7 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 $output->writeln('<info>' . $api_user->first_name . ' ' . $api_user->last_name . '</info>');
 
                 $doctrine->getManager()->getRepository('HarvesterFetchBundle:User')
-                    ->registerUser($api_user, $output);
+                    ->registerUser($api_user, $input, $output);
 
                 // Fetch user entries updated within range.
                 $range = new Harvest_Range($from_date, $to_date);
