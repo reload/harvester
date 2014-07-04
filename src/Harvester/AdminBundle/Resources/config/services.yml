@@ -11,6 +11,7 @@ services:
       - @admin_mailer
       - @router
       - @templating
+      - @admin_utilities
 
   admin_user_form:
     class: Harvester\AdminBundle\AdminUserForm
@@ -22,3 +23,6 @@ services:
     arguments:
       - @mailer
       - @templating
+
+  admin_utilities:
+    class: Harvester\AdminBundle\AdminUtilities

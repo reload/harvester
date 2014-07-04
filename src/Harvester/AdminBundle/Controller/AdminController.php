@@ -10,10 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\SecurityContext;
-use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Harvester\AdminBundle\AdminMailer;
 use Harvester\AdminBundle\AdminUserForm;
+use Harvester\AdminBundle\AdminUtilities;
 
 /**
  * @Route(service="admin_controller")
@@ -51,6 +51,11 @@ class AdminController
     protected $templating;
 
     /**
+     * @var \Harvester\AdminBundle\AdminUtilities
+     */
+    protected $utilities;
+
+    /**
      * @param ManagerRegistry $doctrine
      * @param AdminUserForm $form
      * @param SessionInterface $session
@@ -58,7 +63,7 @@ class AdminController
      * @param RouterInterface $router
      * @param EngineInterface $templating
      */
-    public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer, RouterInterface $router, EngineInterface $templating)
+    public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer, RouterInterface $router, EngineInterface $templating, AdminUtilities $utilities)
     {
         $this->doctrine = $doctrine;
         $this->form = $form;
@@ -66,6 +71,7 @@ class AdminController
         $this->mailer = $mailer;
         $this->router = $router;
         $this->templating = $templating;
+        $this->utilities = $utilities;
     }
 
     /**
@@ -113,11 +119,8 @@ class AdminController
     public function generatePasswordAction($user_id = null)
     {
         if ($user_id !== null) {
-            $generator = new UriSafeTokenGenerator();
-            $token = $generator->generateToken();
-            $user_password = substr($token, 0, 6);
-
             // Change user password.
+            $user_password = $this->utilities->generatePassword();
             $user = $this->doctrine->getRepository('HarvesterFetchBundle:User')->findOneById($user_id);
             $user->setPassword($user_password);
             $this->doctrine->getManager()->persist($user);
