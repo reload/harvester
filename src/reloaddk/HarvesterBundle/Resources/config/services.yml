@@ -1,0 +1,24 @@
+parameters:
+  admin_controller.class: reloaddk\HarvesterBundle\Controller\AdminController
+
+services:
+  admin_controller:
+    class: %admin_controller.class%
+    arguments:
+      - @doctrine
+      - @admin_user_form
+      - @session
+      - @admin_mailer
+      - @router
+      - @templating
+
+  admin_user_form:
+    class: reloaddk\HarvesterBundle\AdminUserForm
+    arguments:
+      - @form.factory
+
+  admin_mailer:
+    class: reloaddk\HarvesterBundle\AdminMailer
+    arguments:
+      - @mailer
+      - @templating

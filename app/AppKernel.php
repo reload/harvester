@@ -20,9 +20,10 @@ class AppKernel extends Kernel
             new FOS\RestBundle\FOSRestBundle(),
             new JMS\SerializerBundle\JMSSerializerBundle(),
             new Nelmio\ApiDocBundle\NelmioApiDocBundle(),
-            new Harvester\APIBundle\HarvesterAPIBundle(),
-            new Harvester\FetchBundle\HarvesterFetchBundle(),
-            new Harvester\AdminBundle\HarvesterAdminBundle(),
+//            new Harvester\APIBundle\HarvesterAPIBundle(),
+//            new Harvester\FetchBundle\HarvesterFetchBundle(),
+//            new Harvester\AdminBundle\HarvesterAdminBundle(),
+            new reloaddk\HarvesterBundle\reloaddkHarvesterBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

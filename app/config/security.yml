@@ -1,6 +1,6 @@
 security:
     encoders:
-        Harvester\FetchBundle\Entity\User:
+        reloaddk\HarvesterBundle\Entity\User:
             algorithm: bcrypt
 
     role_hierarchy:
@@ -8,7 +8,7 @@ security:
 
     providers:
         user_db:
-          entity: { class: Harvester\FetchBundle\Entity\User, property: email }
+          entity: { class: reloaddk\HarvesterBundle\Entity\User, property: email }
 
     firewalls:
         dev:
