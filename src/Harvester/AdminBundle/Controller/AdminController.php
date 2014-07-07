@@ -62,6 +62,7 @@ class AdminController
      * @param AdminMailer $mailer
      * @param RouterInterface $router
      * @param EngineInterface $templating
+     * @param AdminUtilities $utilities
      */
     public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer, RouterInterface $router, EngineInterface $templating, AdminUtilities $utilities)
     {
@@ -140,7 +141,7 @@ class AdminController
 
     /**
      * @Route("/admin/users/{user_id}", name="_useredit")
-     * * @Template()
+     * @Template()
      */
     public function usersAction(Request $request, $user_id = null)
     {
