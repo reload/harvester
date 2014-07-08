@@ -32,7 +32,7 @@ class ApiUserController extends FOSRestController implements ClassResourceInterf
      */
     public function cgetAction()
     {
-        $users = $this->container->get('doctrine.orm.entity_manager')->getRepository('HarvesterFetchBundle:User')->findAll();
+        $users = $this->container->get('doctrine.orm.entity_manager')->getRepository('reloaddkHarvesterBundle:User')->findAll();
 
         $view = $this->view($users, $users ? 200 : 404);
 
@@ -71,7 +71,7 @@ class ApiUserController extends FOSRestController implements ClassResourceInterf
     public function postLoginAction()
     {
         $repository = $this->getDoctrine()
-            ->getRepository('HarvesterFetchBundle:User');
+            ->getRepository('reloaddkHarvesterBundle:User');
 
         $query = $repository->createQueryBuilder('u')
             ->where('u.email = :email')
@@ -112,7 +112,9 @@ class ApiUserController extends FOSRestController implements ClassResourceInterf
      */
     public function getAction($user_id)
     {
-        $user = $this->container->get('doctrine.orm.entity_manager')->getRepository('HarvesterFetchBundle:User')->findOneById($user_id);
+        $user = $this->container->get('doctrine.orm.entity_manager')
+            ->getRepository('reloaddkHarvesterBundle:User')
+            ->findOneById($user_id);
 
         $view = $this->view($user, $user ? 200 : 404);
 
@@ -144,7 +146,9 @@ class ApiUserController extends FOSRestController implements ClassResourceInterf
      */
     public function getEntriesAction($user_id)
     {
-        $entries = $this->container->get('doctrine.orm.entity_manager')->getRepository('HarvesterFetchBundle:Entry')->findByUser($user_id);
+        $entries = $this->container->get('doctrine.orm.entity_manager')
+            ->getRepository('reloaddkharvesterbundle:Entry')
+            ->findByUser($user_id);
 
         $view = $this->view($entries, $entries ? 200 : 404);
 

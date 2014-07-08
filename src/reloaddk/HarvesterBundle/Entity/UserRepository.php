@@ -5,7 +5,7 @@ namespace reloaddk\HarvesterBundle\Entity;
 use Doctrine\ORM\EntityRepository;
 use DateTime;
 use Harvest_User;
-use reloaddk\HarvesterBundle\Controller\EntryController;
+use reloaddk\HarvesterBundle\Controller\ApiEntryController;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\Output;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -116,14 +116,14 @@ class UserRepository extends EntityRepository implements UserProviderInterface
      * @param String $token
      * @return user_id | JsonReponse object
      */
-    static public function validateToken(EntryController $controller, $token = null)
+    static public function validateToken(ApiEntryController $controller, $token = null)
     {
         if (strstr($token, '|')) {
             // Split the token.
             list($hash, $email) = explode('|', $token);
 
             $repository = $controller->getDoctrine()
-                ->getRepository('HarvesterFetchBundle:User');
+                ->getRepository('reloaddkHarvesterBundle:User');
 
             $query = $repository->createQueryBuilder('u')
                 ->where('u.email = :email')
@@ -158,7 +158,9 @@ class UserRepository extends EntityRepository implements UserProviderInterface
      */
     public function registerUser(Harvest_User $harvest_user, InputInterface $input, OutputInterface $output)
     {
-        $user = $this->getEntityManager()->getRepository('HarvesterFetchBundle:User')->findOneById($harvest_user->id);
+        $user = $this->getEntityManager()
+            ->getRepository('reloaddkHarvesterBundle:User')
+            ->findOneById($harvest_user->id);
 
         // Create user.
         if (!$user) {
@@ -202,7 +204,9 @@ class UserRepository extends EntityRepository implements UserProviderInterface
         $user->setUpdatedAt(new DateTime($harvest_user->get('updated-at')));
 
         // Get Role 'ROLE_ADMIN' Object from Role table.
-        $userRole = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Role')->findOneByName('ROLE_ADMIN');
+        $userRole = $this->getEntityManager()
+            ->getRepository('reloaddkHarvesterBundle:Role')
+            ->findOneByName('ROLE_ADMIN');
 
         // If 'ROLE_ADMIN' doesn't exists, create it.
         if (!$userRole) {

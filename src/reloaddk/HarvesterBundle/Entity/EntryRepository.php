@@ -36,22 +36,25 @@ class EntryRepository extends EntityRepository
 
             if (!$entry) {
                 $this->saveEntry(new Entry(), $user_entry, $api);
-                if (!$count_new_entries) {
-                    $output->writeln('<info>--> Entries created.</info>');
-                    ++$count_new_entries;
-                }
+                ++$count_new_entries;
             }
             else {
                 $entry_last_update = new DateTime($user_entry->get('updated-at'));
 
                 if ($entry->getUpdatedAt()->getTimestamp() < $entry_last_update->getTimestamp()-7200) {
                     $this->saveEntry($entry, $user_entry, $api);
-                    if (!$count_updated_entries) {
-                        $output->writeln('<info>--> Entries updated.</info>');
-                        ++$count_updated_entries;
-                    }
+                    ++$count_updated_entries;
                 }
             }
+        }
+        if ($count_updated_entries || $count_new_entries) {
+            $output->writeln('<comment>--> Entries: </comment>');
+        }
+        if ($count_updated_entries) {
+            $output->writeln('<info>    ' . $count_updated_entries . ' updated</info>');
+        }
+        if ($count_new_entries) {
+            $output->writeln('<info>    ' . $count_new_entries . ' updated</info>');
         }
     }
 
@@ -96,7 +99,7 @@ class EntryRepository extends EntityRepository
         $entry->setUpdatedAt(new DateTime($harvest_entry->get('updated-at')));
         $entry->setCreatedAt(new DateTime($harvest_entry->get('created-at')));
 
-        // Save it to db.
+        // Insert data into database.
         $em = $this->getEntityManager();
         $em->persist($entry);
         $em->flush();
