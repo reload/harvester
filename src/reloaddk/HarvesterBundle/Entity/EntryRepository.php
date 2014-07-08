@@ -47,14 +47,16 @@ class EntryRepository extends EntityRepository
                 }
             }
         }
+
+        // Output to screen.
         if ($count_updated_entries || $count_new_entries) {
             $output->writeln('<comment>--> Entries: </comment>');
-        }
-        if ($count_updated_entries) {
-            $output->writeln('<info>    ' . $count_updated_entries . ' updated</info>');
-        }
-        if ($count_new_entries) {
-            $output->writeln('<info>    ' . $count_new_entries . ' updated</info>');
+            if ($count_new_entries) {
+                $output->writeln('<info>    ' . $count_new_entries . ' created</info>');
+            }
+            if ($count_updated_entries) {
+                $output->writeln('<info>    ' . $count_updated_entries . ' updated</info>');
+            }
         }
     }
 
