@@ -7,6 +7,8 @@ use Harvest_Result;
 use Harvest_DayEntry;
 use HarvestReports;
 use DateTime;
+use DatePeriod;
+use DateInterval;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -128,7 +130,7 @@ class EntryRepository extends EntityRepository
             if ($row->getUser()->getIsActive() && !$row->getUser()->getIsContractor()) {
                 if (!array_key_exists($row->getUser()->getId(), $old_user) || count($old_user) == 0) {
                     $working_hours = $row->getUser()->getWorkingHours() != 0 ? $row->getUser()->getWorkingHours() : 7.5;
-                    $hours_in_range += $working_hours * $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), $date_to->getValue()->format('U'));
+                    $hours_in_range += $working_hours * $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), $date_to->getValue()->format('Ymd'));
                     $old_user[$row->getUser()->getId()] = true;
                 }
                 $hours += $row->getHours();
@@ -136,10 +138,10 @@ class EntryRepository extends EntityRepository
             }
         }
 
-        $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), time());
+        $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), date('Ymd', time()));
 
         if (date('Ymd', time()) !== $date_to->getValue()->format('Ymd')) {
-            $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), $date_to->getValue()->format('U'));
+            $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), $date_to->getValue()->format('Ymd'));
         }
 
         foreach ($user_entries as $user) {
@@ -154,8 +156,8 @@ class EntryRepository extends EntityRepository
         return array(
             'success' => ($query_result ? true : false),
             'ranking' => $ranking,
-            'date_start' => $date_from->getValue()->format('U'),
-            'date_end' => $date_to->getValue()->format('U'),
+            'date_start' => $date_from->getValue()->format('Ymd'),
+            'date_end' => $date_to->getValue()->format('Ymd'),
             'hours_in_range' => $hours_in_range,
             'hours_total_registered' => $hours,
             'misc' => array(
@@ -169,7 +171,7 @@ class EntryRepository extends EntityRepository
     }
 
     /**
-     * Find amount of working days in range.
+     * Find amount of working days in range by "Ymd" format.
      *
      * @param int $from
      * @param int $to
@@ -178,16 +180,47 @@ class EntryRepository extends EntityRepository
     public function calcWorkingDaysInRange($from, $to)
     {
         // If we only want to fetch one day.
-        if ($from > $to-86400) {
+        if ($from === $to) {
             return 1;
         }
 
-        $work_days = 0;
+        // Create an instance of the range.
+        $from = Datetime::createFromFormat('Ymd', $from);
+        $to = Datetime::createFromFormat('Ymd', $to);
+        $today = Datetime::createFromFormat('Ymd', date('Ymd', time()));
 
-        for ($i = $from; $i <= $to; $i += 86400) {
-            $tmp_day = Datetime::createFromFormat('U', $i);
-            if ($tmp_day->format('N') < 6) {
-                ++$work_days;
+        // If: "to" is the same month / year as the current month / year.
+        // Or: "to" is greater than the current month / year.
+        if (($to->format('Ym') === $today->format('Ym')) OR ($to->format('Ym') > $today->format('Ym'))) {
+            // If "to" is greater than or equal to the current date.
+            if ($to >= $today) {
+                // Set "to", to the current date.
+                $to = Datetime::createFromFormat('Ymd', date('Ymd', time()));
+            }
+            // Else: include the end date to the period.
+            else {
+              $to->modify('+1 day');
+            }
+        }
+        // Else: include the end date to the period.
+        else {
+            $to->modify('+1 day');
+        }
+        // Set the date interval to be "1 day" (P1D means: Period = 1 Day).
+        $interval = new DateInterval('P1D');
+        // Get the period from the "from" date to the "to" date,
+        // based on 1 day periods.
+        $periods = new DatePeriod($from, $interval, $to);
+
+        // Find amount of work days.
+        $work_days = 0;
+        // We loop through each period/day and find each "N" that's between
+        // 1 to 5 (mon - fri).
+        foreach ($periods as $period) {
+            // If the day is from 1 to 5 (mon-fri).
+            if ($period->format('N') < 6) {
+                // Add a day to "amount of work days".
+                $work_days++;
             }
         }
 
@@ -223,6 +256,7 @@ class EntryRepository extends EntityRepository
      * @param $user_entries
      * @param int $workingdays_to_now
      * @param float $user_working_hours
+     * @param string $token
      * @return array
      */
     public function parseRanking(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
