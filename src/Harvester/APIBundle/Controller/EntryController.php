@@ -98,6 +98,7 @@ class EntryController extends FOSRestController
         // Set the default from / to dates.
         $date_from = new DateTime('first day of this month 00:00:00');
         $date_to = new DateTime('yesterday 23:59:59');
+        $date_today = new DateTime('today');
 
         // If: it's the first day of the month.
         // Or: we're within the first 3 days of the month, and the first day is monday.
@@ -111,6 +112,12 @@ class EntryController extends FOSRestController
         if ($month && $year) {
             $date_from = new DateTime('first day of ' . $month . ' ' . $year . '00:00:00');
             $date_to = new DateTime('last day of ' . $month . ' ' . $year . '23:59:59');
+
+            // If the given month / year is equal to the current month / year.
+            if ($date_to->format('Ym') === $date_today->format('Ym')) {
+                // Then we set "to", to be the current date instead of the end of the month.
+                $date_to = new DateTime(date('Ymd', time()));
+            }
         }
 
         // If from/to is set, it overwrites month/year
@@ -119,9 +126,16 @@ class EntryController extends FOSRestController
             $date_from = DateTime::createFromFormat('Ymd', $from)->setTime(0,0,0);
         }
 
+        // If from/to is set, it overwrites month/year
         if ($to == true) {
             // Set time to 23:59:59 on object.
             $date_to = Datetime::createFromFormat('Ymd', $to)->setTime(23,59,59);
+
+            // If "date_to" equals the current day.
+            if ($date_to->format('Ymd') === $date_today->format('Ymd')) {
+                // Subtract 1 day.
+                $date_to->modify('-1 day');
+            }
         }
 
         // Start query from entry table.
