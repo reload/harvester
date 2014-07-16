@@ -11,4 +11,3 @@ class AdminUtilities
         return substr($token, 0, 6);
     }
 }
-
