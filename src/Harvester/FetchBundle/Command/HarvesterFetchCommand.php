@@ -43,6 +43,12 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 InputOption::VALUE_NONE,
                 'If set, preserve the admin roles set on the user, add role to new users')
             ->addOption(
+                'updated',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'How many days do you want to go back and look for updated entries?',
+                1)
+            ->addOption(
                 'updated-yesterday',
                 null,
                 InputOption::VALUE_NONE,
@@ -89,6 +95,17 @@ class HarvesterFetchCommand extends ContainerAwareCommand
         // Get the current date.
         $date_today = new DateTime('now');
 
+        // Updated: custom value.
+        if ($input->getOption('updated')) {
+          // If 1 is greater than the requested amount of days.
+          if ($input->getOption('updated') <= 0) {
+            $output->writeln('<info>The value for the "updated" argument, must be greater than 0</info>');
+            return;
+          }
+          // Set the period to days and deduced "1" from the current date;
+          $interval = new DateInterval('P' . $input->getOption('updated') . 'D');
+          $updated_since = $date_today->sub($interval)->format('Y-m-d');
+        }
         // Updated: Yesterday.
         if ($input->getOption('updated-yesterday')) {
             // Set the period to days and deduced "1" from the current date;
