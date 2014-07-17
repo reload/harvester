@@ -43,13 +43,12 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 InputOption::VALUE_NONE,
                 'If set, preserve the admin roles set on the user, add role to new users.')
             ->addOption(
-                'clear-records',
+                'refresh',
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'Clear the user entries from the database within a range and refill the entries.
 You can provide a value which will be the amount of days, before the current date.
-If you don\'t provide a value, it will use the normal "from" and "to" date range.',
-                true)
+If you don\'t provide a value, it will use the normal "from" and "to" date range.')
             ->addOption(
                 'updated',
                 null,
@@ -138,11 +137,11 @@ If you don\'t provide a value, it will use the normal "from" and "to" date range
         // Set "updated since" to "null" if no argument were provided.
         $updated_since = isset($updated_since) ? $updated_since : null;
 
-        // If the "clear previous records" option is provided and a value is provided,
-        // overwrite the "from" and "to" dates.
-        if (is_string($input->getOption('clear-records'))) {
+        // If the "clear previous records" option is provided and a numeric value is
+        // given, overwrite the "from" and "to" dates.
+        if (is_numeric($input->getOption('refresh'))) {
           // Get the amount of days the user want to go back and clear.
-          $interval = new DateInterval('P' . $input->getOption('clear-records') . 'D');
+          $interval = new DateInterval('P' . $input->getOption('refresh') . 'D');
           // Set the "from" date and include the current day, so when the user
           // wishes to go "10" days back from the 17th, it will go back to
           // the 7th instead of the 6th.
@@ -166,7 +165,7 @@ If you don\'t provide a value, it will use the normal "from" and "to" date range
                 $output->writeln($api_user->notes);
 
                 // If the "clear previous records" options is provided.
-                if ($input->getOption('clear-records')) {
+                if (is_numeric($input->getOption('refresh')) || $input->getOption('refresh') == 'range') {
                     // Delete the entries.
                     $entry_repository->deleteEntries($api_user, $from_date->format('Y-m-d'), $to_date->format('Y-m-d'), $output);
                 }
