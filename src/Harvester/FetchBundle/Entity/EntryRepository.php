@@ -58,6 +58,32 @@ class EntryRepository extends EntityRepository
     }
 
     /**
+     * Delete Entries based on user id.
+     *
+     * @param object $user
+     * @param string $from_date in Y-m-d format
+     * @param string $to_date in Y-m-d format
+     * @param $output
+     */
+    public function deleteEntries($user, $from_date, $to_date, OutputInterface $output)
+    {
+        // Get the Doctrine Entity Manager and delete all rows for a user between a scope.
+        $em = $this->getEntityManager();
+        $query = $em->createQuery('DELETE HarvesterFetchBundle:entry e WHERE e.user = :user AND e.createdAt >= :from_date AND e.createdAt <= :to_date')
+            ->setParameter('user', $user->id)
+            ->setParameter('from_date', $from_date . ' 00:00:00')
+            ->setParameter('to_date', $to_date . ' 23:59:59');
+        $result = $query->execute();
+
+        // Output.
+        if ($result) {
+            $output->writeln('<info>--> Entries deleted.</info>');
+        } else {
+            $output->writeln('<info>--> No entries deleted.</info>');
+        }
+    }
+
+    /**
      * Save Entry to database.
      *
      * @param Entry $entry
