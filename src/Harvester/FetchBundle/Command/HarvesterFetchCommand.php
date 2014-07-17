@@ -36,38 +36,45 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 'all-users',
                 null,
                 InputOption::VALUE_NONE,
-                'If set, both active and inactive users will be fetched')
+                'If set, both active and inactive users will be fetched.')
             ->addOption(
                 'preserve-roles',
                 null,
                 InputOption::VALUE_NONE,
-                'If set, preserve the admin roles set on the user, add role to new users')
+                'If set, preserve the admin roles set on the user, add role to new users.')
+            ->addOption(
+                'clear-records',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Clear the user entries from the database within a range and refill the entries.
+You can provide a value which will be the amount of days, before the current date.
+If you don\'t provide a value, it will use the normal "from" and "to" date range.',
+                true)
             ->addOption(
                 'updated',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'How many days do you want to go back and look for updated entries?',
-                1)
+                'How many days do you want to go back and look for updated entries?')
             ->addOption(
                 'updated-yesterday',
                 null,
                 InputOption::VALUE_NONE,
-                'If set, get the entries that have been updated since yesterday')
+                'If set, get the entries that have been updated since yesterday.')
             ->addOption(
                 'updated-week',
                 null,
                 InputOption::VALUE_NONE,
-                'If set, get the entries that have been updated within the last 7 days')
+                'If set, get the entries that have been updated within the last 7 days.')
             ->addOption(
                 'updated-month',
                 null,
                 InputOption::VALUE_NONE,
-                'If set, get the entries that have been updated within the last 30 days')
+                'If set, get the entries that have been updated within the last 30 days.')
             ->addOption(
                 'updated-year',
                 null,
                 InputOption::VALUE_NONE,
-                'If set, get the entries that have been updated this year'
+                'If set, get the entries that have been updated this year.'
             );
     }
 
@@ -89,8 +96,8 @@ class HarvesterFetchCommand extends ContainerAwareCommand
         $api_users = $input->getOption('all-users') ? $api->getUsers() : $api->getActiveUsers();
 
         // Get date arguments from command.
-        $from_date = $input->getArgument('from-date');
-        $to_date = $input->getArgument('to-date');
+        $from_date = Datetime::createFromFormat('Ymd', $input->getArgument('from-date'));
+        $to_date = Datetime::createFromFormat('Ymd', $input->getArgument('to-date'));
 
         // Get the current date.
         $date_today = new DateTime('now');
@@ -128,9 +135,27 @@ class HarvesterFetchCommand extends ContainerAwareCommand
         if ($input->getOption('updated-year')) {
             $updated_since = $date_today->format('Y') . '-01-01';
         }
-
         // Set "updated since" to "null" if no argument were provided.
         $updated_since = isset($updated_since) ? $updated_since : null;
+
+        // If the "clear previous records" option is provided and a value is provided,
+        // overwrite the "from" and "to" dates.
+        if (is_string($input->getOption('clear-records'))) {
+          // Get the amount of days the user want to go back and clear.
+          $interval = new DateInterval('P' . $input->getOption('clear-records') . 'D');
+          // Set the "from" date and include the current day, so when the user
+          // wishes to go "10" days back from the 17th, it will go back to
+          // the 7th instead of the 6th.
+          $from_date = Datetime::createFromFormat('Ymd', date('Ymd', time()))
+              ->modify('+1 day')
+              ->sub($interval);
+          // Set the "to" date, to the current date.
+          $to_date = $date_today;
+        }
+
+        // Load the repositories that we wish to work with inside the loop.
+        $user_repository = $doctrine->getManager()->getRepository('HarvesterFetchBundle:User');
+        $entry_repository = $doctrine->getManager()->getRepository('HarvesterFetchBundle:Entry');
 
         // If we have a valid callback from Harvest.
         if ($api_users->isSuccess()) {
@@ -140,20 +165,24 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 $output->writeln('<info>' . $api_user->first_name . ' ' . $api_user->last_name . '</info>');
                 $output->writeln($api_user->notes);
 
-                // Get the User Repository.
-                $doctrine->getManager()->getRepository('HarvesterFetchBundle:User')
-                    ->registerUser($api_user, $input, $output);
+                // If the "clear previous records" options is provided.
+                if ($input->getOption('clear-records')) {
+                    // Delete the entries.
+                    $entry_repository->deleteEntries($api_user, $from_date->format('Y-m-d'), $to_date->format('Y-m-d'), $output);
+                }
+
+                // Register or update user.
+                $user_repository->registerUser($api_user, $input, $output);
 
                 // Set range for the Harvest data.
-                $range = new Harvest_Range($from_date, $to_date);
+                $range = new Harvest_Range($from_date->format('Ymd'), $to_date->format('Ymd'));
 
                 // Fetch user entries (the 3. argument is null since we don't want to use a project ID).
                 $user_entries = $extended_api->getUserEntries($user_id, $range, null, $updated_since);
 
                 // Save users entries if any is available.
                 if ($user_entries->isSuccess() && count($user_entries->get('data'))) {
-                    $doctrine->getManager()->getRepository('HarvesterFetchBundle:Entry')
-                        ->registerEntry($user_entries, $output, $api);
+                    $entry_repository->registerEntry($user_entries, $output, $api);
                 }
             }
         }
