@@ -138,53 +138,62 @@ class EntryRepository extends EntityRepository
      */
     public function groupByUser(\Doctrine\ORM\QueryBuilder $query, $working_hours_per_day = null, $token = null)
     {
-        $query_result = $query->getQuery()->getResult();
-
         // Fetch date range from query.
+        $query_result = $query->getQuery()->getResult();
         $date_to = $query->getQuery()->getParameter('date_to');
         $date_from = $query->getQuery()->getParameter('date_from');
 
+        // Define default values.
         $hours = 0;
         $hours_in_range = null;
         $hours_to_today = null;
-        $ranking = array();
+        $users = array();
         $old_user = [];
+        $user_entries = [];
+        $working_days_in_range = $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), $date_to->getValue()->format('Ymd'));
 
-        foreach ($query_result as $row) {
-            if ($row->getUser()->getIsActive() && !$row->getUser()->getIsContractor()) {
-                if (!array_key_exists($row->getUser()->getId(), $old_user) || count($old_user) == 0) {
-                    $working_hours = $row->getUser()->getWorkingHours() != 0 ? $row->getUser()->getWorkingHours() : 7.5;
-                    $hours_in_range += $working_hours * $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), $date_to->getValue()->format('Ymd'));
-                    $old_user[$row->getUser()->getId()] = true;
+        // Loop through each result / user.
+        foreach ($query_result as $user) {
+            // If the user is active and isn't a contractor.
+            if ($user->getUser()->getIsActive() && !$user->getUser()->getIsContractor()) {
+                // And the user isn't an old user (@TODO: Explain why we do this??).
+                if (!array_key_exists($user->getUser()->getId(), $old_user) || count($old_user) == 0) {
+                    // Provide a default value for "expected hours per day (7.5),
+                    // if no specifics have been provided.
+                    $working_hours = $user->getUser()->getWorkingHours() != 0 ? $user->getUser()->getWorkingHours() : 7.5;
+                    // Calculate the expected amount of hours registered in a period/range.
+                    $hours_in_range += $working_hours * $working_days_in_range;
+                    // Push the user-id to the "old user" array and set the value as "true".
+                    $old_user[$user->getUser()->getId()] = true;
                 }
-                $hours += $row->getHours();
-                $user_entries[$row->getUser()->getId()][] = $row;
+                // Add the users hours to the total sum of expected hours, for all users.
+                $hours += $user->getHours();
+                // Push the user to an array, holding all users.
+                $user_entries[$user->getUser()->getId()][] = $user;
             }
         }
 
-        $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), date('Ymd', time()));
-
-        if (date('Ymd', time()) !== $date_to->getValue()->format('Ymd')) {
-            $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), $date_to->getValue()->format('Ymd'));
-        }
-
+        // Loop through each user.
         foreach ($user_entries as $user) {
-            $ranking[] = $this->parseRanking($user, $workingdays_to_now, $working_hours_per_day, $token);
+            // Format the user-data we wish to push to the final array.
+            $users[] = $this->parseUser($user, $working_days_in_range, $working_hours_per_day, $token);
         }
 
         // Get the first registered entry.
         $first_entry_object = $this->getEntityManager()->getRepository('HarvesterFetchBundle:Entry')->findOneBy(array(), array(
-            'spentAt' => 'ASC',
+            'createdAt' => 'ASC',
         ));
 
+        // Return the final response.
         return array(
             'success' => ($query_result ? true : false),
-            'ranking' => $ranking,
+            'users' => $users,
             'date_start' => $date_from->getValue()->format('Ymd'),
             'date_end' => $date_to->getValue()->format('Ymd'),
             'hours_in_range' => $hours_in_range,
             'hours_total_registered' => $hours,
             'misc' => array(
+                'working_days_in_range' => $working_days_in_range,
                 'first_entry' => array(
                     'year' => $first_entry_object->getSpentAt()->format('Y'),
                     'day' => $first_entry_object->getSpentAt()->format('d'),
@@ -283,7 +292,7 @@ class EntryRepository extends EntityRepository
      * @param string $token
      * @return array
      */
-    public function parseRanking(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
+    public function parseUser(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
     {
         $hours = $billable = $education = $holiday = $time_off = $vacation = 0;
         $illness['normal'] = $illness['child'] = 0;
@@ -370,7 +379,6 @@ class EntryRepository extends EntityRepository
             'first_name' => $entry->getUser()->getFirstName(),
             'last_name' => $entry->getUser()->getLastName(),
             'full_name' => $entry->getUser()->getFirstName() . ' ' . $entry->getUser()->getLastName(),
-            'group' => $this->determineRankingGroup($hours, $hours_goal),
             'hours_goal' => $hours_goal,
             'hours_registered' => $hours,
             'image' => 'https://proxy.harvestfiles.com/production_harvestapp_public/uploads/users/avatar/' . implode('/', $split_user_id) . '/normal.jpg',
