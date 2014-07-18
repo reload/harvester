@@ -69,7 +69,7 @@ class EntryRepository extends EntityRepository
     {
         // Get the Doctrine Entity Manager and delete all rows for a user between a scope.
         $em = $this->getEntityManager();
-        $query = $em->createQuery('DELETE HarvesterFetchBundle:entry e WHERE e.user = :user AND e.createdAt >= :from_date AND e.createdAt <= :to_date')
+        $query = $em->createQuery('DELETE HarvesterFetchBundle:entry e WHERE e.user = :user AND e.spentAt >= :from_date AND e.spentAt <= :to_date')
             ->setParameter('user', $user->id)
             ->setParameter('from_date', $from_date . ' 00:00:00')
             ->setParameter('to_date', $to_date . ' 23:59:59');
