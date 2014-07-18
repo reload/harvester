@@ -21,16 +21,16 @@ class HarvesterFetchCommand extends ContainerAwareCommand
 
         $this
             ->setName('harvester:fetch')
-            ->setDescription('Fetch Harvest data')
+            ->setDescription('Fetch Harvest data.')
             ->addArgument(
                 'from-date',
                 InputArgument::OPTIONAL,
-                "'From' date. (yyyymmdd)",
+                "'From' date. (YYYYMMDD).",
                 $date_from->format('Ymd'))
             ->addArgument(
                 'to-date',
                 InputArgument::OPTIONAL,
-                "'To' date. (yyyymmdd)",
+                "'To' date. (YYYYMMDD).",
                 $date_to->format('Ymd'))
             ->addOption(
                 'all-users',
@@ -42,13 +42,6 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 null,
                 InputOption::VALUE_NONE,
                 'If set, preserve the admin roles set on the user, add role to new users.')
-            ->addOption(
-                'refresh',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'Clear the user entries from the database within a range and refill the entries.
-You can provide a value which will be the amount of days, before the current date.
-If you don\'t provide a value, it will use the normal "from" and "to" date range.')
             ->addOption(
                 'updated',
                 null,
@@ -105,7 +98,7 @@ If you don\'t provide a value, it will use the normal "from" and "to" date range
         if ($input->getOption('updated')) {
           // If 1 is greater than the requested amount of days.
           if ($input->getOption('updated') <= 0) {
-            $output->writeln('<info>The value for the "updated" argument, must be greater than 0</info>');
+            $output->writeln('<error>The value for the "updated" argument, must be greater than 0</error>');
             return;
           }
           // Set the period to days and deduced "1" from the current date;
@@ -137,21 +130,6 @@ If you don\'t provide a value, it will use the normal "from" and "to" date range
         // Set "updated since" to "null" if no argument were provided.
         $updated_since = isset($updated_since) ? $updated_since : null;
 
-        // If the "clear previous records" option is provided and a numeric value is
-        // given, overwrite the "from" and "to" dates.
-        if (is_numeric($input->getOption('refresh'))) {
-          // Get the amount of days the user want to go back and clear.
-          $interval = new DateInterval('P' . $input->getOption('refresh') . 'D');
-          // Set the "from" date and include the current day, so when the user
-          // wishes to go "10" days back from the 17th, it will go back to
-          // the 7th instead of the 6th.
-          $from_date = Datetime::createFromFormat('Ymd', date('Ymd', time()))
-              ->modify('+1 day')
-              ->sub($interval);
-          // Set the "to" date, to the current date.
-          $to_date = $date_today;
-        }
-
         // Load the repositories that we wish to work with inside the loop.
         $user_repository = $doctrine->getManager()->getRepository('HarvesterFetchBundle:User');
         $entry_repository = $doctrine->getManager()->getRepository('HarvesterFetchBundle:Entry');
@@ -163,12 +141,6 @@ If you don\'t provide a value, it will use the normal "from" and "to" date range
                 // Output the current user to the terminal.
                 $output->writeln('<info>' . $api_user->first_name . ' ' . $api_user->last_name . '</info>');
                 $output->writeln($api_user->notes);
-
-                // If the "clear previous records" options is provided.
-                if (is_numeric($input->getOption('refresh')) || $input->getOption('refresh') == 'range') {
-                    // Delete the entries.
-                    $entry_repository->deleteEntries($api_user, $from_date->format('Y-m-d'), $to_date->format('Y-m-d'), $output);
-                }
 
                 // Register or update user.
                 $user_repository->registerUser($api_user, $input, $output);

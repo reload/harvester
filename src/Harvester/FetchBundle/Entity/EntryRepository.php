@@ -39,7 +39,7 @@ class EntryRepository extends EntityRepository
             if (!$entry) {
                 $this->saveEntry(new Entry(), $user_entry, $api);
                 if (!$count_new_entries) {
-                    $output->writeln('<info>--> Entries created.</info>');
+                    $output->writeln('<comment>--> Entries created.</comment>');
                     ++$count_new_entries;
                 }
             }
@@ -49,7 +49,7 @@ class EntryRepository extends EntityRepository
                 if ($entry->getUpdatedAt()->getTimestamp() < $entry_last_update->getTimestamp()-7200) {
                     $this->saveEntry($entry, $user_entry, $api);
                     if (!$count_updated_entries) {
-                        $output->writeln('<info>--> Entries updated.</info>');
+                        $output->writeln('<comment>--> Entries updated.</comment>');
                         ++$count_updated_entries;
                     }
                 }
@@ -77,9 +77,7 @@ class EntryRepository extends EntityRepository
 
         // Output.
         if ($result) {
-            $output->writeln('<info>--> Entries deleted.</info>');
-        } else {
-            $output->writeln('<info>--> No entries deleted.</info>');
+            $output->writeln('<comment>--> Entries deleted.</comment>');
         }
     }
 
