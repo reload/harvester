@@ -366,13 +366,14 @@ class EntryRepository extends EntityRepository
         }
 
         return array(
+            'id' => $entry->getUser()->getId(),
             'first_name' => $entry->getUser()->getFirstName(),
             'last_name' => $entry->getUser()->getLastName(),
             'full_name' => $entry->getUser()->getFirstName() . ' ' . $entry->getUser()->getLastName(),
             'group' => $this->determineRankingGroup($hours, $hours_goal),
             'hours_goal' => $hours_goal,
             'hours_registered' => $hours,
-            'converted_user_id' => implode('/', $split_user_id),
+            'image' => 'https://proxy.harvestfiles.com/production_harvestapp_public/uploads/users/avatar/' . implode('/', $split_user_id) . '/normal.jpg',
             'extra' => $extra,
         );
     }
