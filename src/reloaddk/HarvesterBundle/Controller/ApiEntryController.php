@@ -13,6 +13,7 @@ use FOS\RestBundle\Controller\Annotations\RouteResource;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use reloaddk\HarvesterBundle\Entity\UserRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * @RouteResource("Entry")
@@ -75,10 +76,12 @@ class ApiEntryController extends FOSRestController
      *     }
      *   }
      * )
+     *
+     * @param Request $request
      * @param ParamFetcher $paramFetcher
      * @return Annotation\View
      */
-    public function getEntriesAction(ParamFetcher $paramFetcher)
+    public function getEntriesAction(Request $request, ParamFetcher $paramFetcher)
     {
         $token_response = null;
 
@@ -161,7 +164,7 @@ class ApiEntryController extends FOSRestController
         // Call the custom 'group' repository function.
         $result = $repository->$repository_function($query, $this->container->getParameter('default_hours_per_day'), $token_response);
 
-        $callback = $this->getRequest()->get('callback'); // Check to see if callback parameter is in URL
+        $callback = $request->get('callback'); // Check to see if callback parameter is in URL
 
         $response = new JsonResponse(); // Construct a new JSON response
         $response->setStatusCode($result ? 200 : 404);
@@ -174,5 +177,4 @@ class ApiEntryController extends FOSRestController
 
         return $response;
     }
-
 }
