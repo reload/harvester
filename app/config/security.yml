@@ -18,8 +18,7 @@ security:
         secured_area:
             pattern:    ^/
             anonymous: ~
-
-
+            access_denied_handler: kernel.listener.access_denied.handler
             provider: user_db
             form_login:
               login_path: _admin_login

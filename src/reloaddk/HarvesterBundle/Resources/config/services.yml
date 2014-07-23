@@ -1,5 +1,6 @@
 parameters:
   admin_controller.class: reloaddk\HarvesterBundle\Controller\AdminController
+  kernel.listener.security.class: reloaddk\HarvesterBundle\AccessDeniedHandler
 
 services:
   admin_controller:
@@ -42,3 +43,8 @@ services:
 
   harvest_adapter_extended_api:
     class: reloaddk\HarvesterBundle\ExtendedHarvestAPI
+
+  kernel.listener.access_denied.handler:
+    class: %kernel.listener.security.class%
+    arguments:
+      - @templating
