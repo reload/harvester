@@ -10,10 +10,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\SecurityContext;
-use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use reloaddk\HarvesterBundle\AdminMailer;
 use reloaddk\HarvesterBundle\AdminUserForm;
+use reloaddk\HarvesterBundle\AdminUtilities;
 
 /**
  * @Route(service="admin_controller")
@@ -51,14 +51,20 @@ class AdminController
     protected $templating;
 
     /**
+     * @var \reloaddk\HarvesterBundle\AdminUtilities
+     */
+    protected $utilities;
+
+    /**
      * @param ManagerRegistry $doctrine
      * @param AdminUserForm $form
      * @param SessionInterface $session
      * @param AdminMailer $mailer
      * @param RouterInterface $router
      * @param EngineInterface $templating
+     * @param AdminUtilities $utilities
      */
-    public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer, RouterInterface $router, EngineInterface $templating)
+    public function __construct(ManagerRegistry $doctrine, AdminUserForm $form, SessionInterface $session, AdminMailer $mailer, RouterInterface $router, EngineInterface $templating, AdminUtilities $utilities)
     {
         $this->doctrine = $doctrine;
         $this->form = $form;
@@ -66,6 +72,7 @@ class AdminController
         $this->mailer = $mailer;
         $this->router = $router;
         $this->templating = $templating;
+        $this->utilities = $utilities;
     }
 
     /**
@@ -113,11 +120,8 @@ class AdminController
     public function generatePasswordAction($user_id = null)
     {
         if ($user_id !== null) {
-            $generator = new UriSafeTokenGenerator();
-            $token = $generator->generateToken();
-            $user_password = substr($token, 0, 6);
-
             // Change user password.
+            $user_password = $this->utilities->generatePassword();
             $user = $this->doctrine->getRepository('reloaddkHarvesterBundle:User')->findOneById($user_id);
             $user->setPassword($user_password);
             $this->doctrine->getManager()->persist($user);
@@ -137,7 +141,7 @@ class AdminController
 
     /**
      * @Route("/admin/users/{user_id}", name="_useredit")
-     * * @Template()
+     * @Template()
      */
     public function usersAction(Request $request, $user_id = null)
     {

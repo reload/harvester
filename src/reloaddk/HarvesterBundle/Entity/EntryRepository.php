@@ -7,6 +7,8 @@ use Harvest_Result;
 use Harvest_DayEntry;
 use HarvestReports;
 use DateTime;
+use DatePeriod;
+use DateInterval;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -37,6 +39,10 @@ class EntryRepository extends EntityRepository
             if (!$entry) {
                 $this->saveEntry(new Entry(), $user_entry, $api);
                 ++$count_new_entries;
+                if (!$count_new_entries) {
+                    $output->writeln('<comment>--> Entries created.</comment>');
+                    ++$count_new_entries;
+                }
             }
             else {
                 $entry_last_update = new DateTime($user_entry->get('updated-at'));
@@ -44,6 +50,10 @@ class EntryRepository extends EntityRepository
                 if ($entry->getUpdatedAt()->getTimestamp() < $entry_last_update->getTimestamp()-7200) {
                     $this->saveEntry($entry, $user_entry, $api);
                     ++$count_updated_entries;
+                    if (!$count_updated_entries) {
+                        $output->writeln('<comment>--> Entries updated.</comment>');
+                        ++$count_updated_entries;
+                    }
                 }
             }
         }
@@ -57,6 +67,30 @@ class EntryRepository extends EntityRepository
             if ($count_updated_entries) {
                 $output->writeln('<info>    ' . $count_updated_entries . ' updated</info>');
             }
+        }
+    }
+
+    /**
+     * Delete Entries based on user id.
+     *
+     * @param object $user
+     * @param string $from_date in Y-m-d format
+     * @param string $to_date in Y-m-d format
+     * @param $output
+     */
+    public function deleteEntries($user, $from_date, $to_date, OutputInterface $output)
+    {
+        // Get the Doctrine Entity Manager and delete all rows for a user between a scope.
+        $em = $this->getEntityManager();
+        $query = $em->createQuery('DELETE reloaddkHarvesterBundle:entry e WHERE e.user = :user AND e.spentAt >= :from_date AND e.spentAt <= :to_date')
+            ->setParameter('user', $user->id)
+            ->setParameter('from_date', $from_date . ' 00:00:00')
+            ->setParameter('to_date', $to_date . ' 23:59:59');
+        $result = $query->execute();
+
+        // Output.
+        if ($result) {
+            $output->writeln('<comment>--> Entries deleted.</comment>');
         }
     }
 
@@ -117,38 +151,43 @@ class EntryRepository extends EntityRepository
      */
     public function groupByUser(\Doctrine\ORM\QueryBuilder $query, $working_hours_per_day = null, $token = null)
     {
-        $query_result = $query->getQuery()->getResult();
-
         // Fetch date range from query.
+        $query_result = $query->getQuery()->getResult();
         $date_to = $query->getQuery()->getParameter('date_to');
         $date_from = $query->getQuery()->getParameter('date_from');
 
+        // Define default values.
         $hours = 0;
-        $hours_in_range = null;
-        $hours_to_today = null;
-        $ranking = array();
-        $old_user = [];
+        $hours_in_range = $hours_to_today = null;
+        $users = $old_user = $user_entries = [];
 
-        foreach ($query_result as $row) {
-            if ($row->getUser()->getIsActive() && !$row->getUser()->getIsContractor()) {
-                if (!array_key_exists($row->getUser()->getId(), $old_user) || count($old_user) == 0) {
-                    $working_hours = $row->getUser()->getWorkingHours() != 0 ? $row->getUser()->getWorkingHours() : 7.5;
-                    $hours_in_range += $working_hours * $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), $date_to->getValue()->format('U'));
-                    $old_user[$row->getUser()->getId()] = true;
+        $working_days_in_range = $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), $date_to->getValue()->format('Ymd'));
+
+        // Loop through each result / user.
+        foreach ($query_result as $user) {
+            // If the user is active and isn't a contractor.
+            if ($user->getUser()->getIsActive() && !$user->getUser()->getIsContractor()) {
+                // And the user isn't an old user (@TODO: Explain why we do this??).
+                if (!array_key_exists($user->getUser()->getId(), $old_user) || count($old_user) == 0) {
+                    // Provide a default value for "expected hours per day (7.5),
+                    // if no specifics have been provided.
+                    $working_hours = $user->getUser()->getWorkingHours() != 0 ? $user->getUser()->getWorkingHours() : 7.5;
+                    // Calculate the expected amount of hours registered in a period/range.
+                    $hours_in_range += $working_hours * $working_days_in_range;
+                    // Push the user-id to the "old user" array and set the value as "true".
+                    $old_user[$user->getUser()->getId()] = true;
                 }
-                $hours += $row->getHours();
-                $user_entries[$row->getUser()->getId()][] = $row;
+                // Add the users hours to the total sum of expected hours, for all users.
+                $hours += $user->getHours();
+                // Push the user to an array, holding all users.
+                $user_entries[$user->getUser()->getId()][] = $user;
             }
         }
 
-        $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), time());
-
-        if (date('Ymd', time()) !== $date_to->getValue()->format('Ymd')) {
-            $workingdays_to_now = $this->calcWorkingDaysInRange($date_from->getValue()->format('U'), $date_to->getValue()->format('U'));
-        }
-
+        // Loop through each user.
         foreach ($user_entries as $user) {
-            $ranking[] = $this->parseRanking($user, $workingdays_to_now, $working_hours_per_day, $token);
+            // Format the user-data we wish to push to the final array.
+            $users[] = $this->parseUser($user, $working_days_in_range, $working_hours_per_day, $token);
         }
 
         // Get the first registered entry.
@@ -156,14 +195,16 @@ class EntryRepository extends EntityRepository
             'spentAt' => 'ASC',
         ));
 
+        // Return the final response.
         return array(
             'success' => ($query_result ? true : false),
-            'ranking' => $ranking,
-            'date_start' => $date_from->getValue()->format('U'),
-            'date_end' => $date_to->getValue()->format('U'),
+            'users' => $users,
+            'date_start' => $date_from->getValue()->format('Ymd'),
+            'date_end' => $date_to->getValue()->format('Ymd'),
             'hours_in_range' => $hours_in_range,
             'hours_total_registered' => $hours,
             'misc' => array(
+                'working_days_in_range' => $working_days_in_range,
                 'first_entry' => array(
                     'year' => $first_entry_object->getSpentAt()->format('Y'),
                     'day' => $first_entry_object->getSpentAt()->format('d'),
@@ -174,7 +215,7 @@ class EntryRepository extends EntityRepository
     }
 
     /**
-     * Find amount of working days in range.
+     * Find amount of working days in range by "Ymd" format.
      *
      * @param int $from
      * @param int $to
@@ -183,16 +224,47 @@ class EntryRepository extends EntityRepository
     public function calcWorkingDaysInRange($from, $to)
     {
         // If we only want to fetch one day.
-        if ($from > $to-86400) {
+        if ($from === $to) {
             return 1;
         }
 
-        $work_days = 0;
+        // Create an instance of the range.
+        $from = Datetime::createFromFormat('Ymd', $from);
+        $to = Datetime::createFromFormat('Ymd', $to);
+        $today = Datetime::createFromFormat('Ymd', date('Ymd', time()));
 
-        for ($i = $from; $i <= $to; $i += 86400) {
-            $tmp_day = Datetime::createFromFormat('U', $i);
-            if ($tmp_day->format('N') < 6) {
-                ++$work_days;
+        // If: "to" is the same month / year as the current month / year.
+        // Or: "to" is greater than the current month / year.
+        if (($to->format('Ym') === $today->format('Ym')) OR ($to->format('Ym') > $today->format('Ym'))) {
+            // If "to" is greater than or equal to the current date.
+            if ($to >= $today) {
+                // Set "to", to the current date.
+                $to = Datetime::createFromFormat('Ymd', date('Ymd', time()));
+            }
+            // Else: include the end date to the period.
+            else {
+              $to->modify('+1 day');
+            }
+        }
+        // Else: include the end date to the period.
+        else {
+            $to->modify('+1 day');
+        }
+        // Set the date interval to be "1 day" (P1D means: Period = 1 Day).
+        $interval = new DateInterval('P1D');
+        // Get the period from the "from" date to the "to" date,
+        // based on 1 day periods.
+        $periods = new DatePeriod($from, $interval, $to);
+
+        // Find amount of work days.
+        $work_days = 0;
+        // We loop through each period/day and find each "N" that's between
+        // 1 to 5 (mon - fri).
+        foreach ($periods as $period) {
+            // If the day is from 1 to 5 (mon-fri).
+            if ($period->format('N') < 6) {
+                // Add a day to "amount of work days".
+                $work_days++;
             }
         }
 
@@ -228,11 +300,12 @@ class EntryRepository extends EntityRepository
      * @param $user_entries
      * @param int $workingdays_to_now
      * @param float $user_working_hours
+     * @param string $token
      * @return array
      */
-    public function parseRanking(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
+    public function parseUser(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
     {
-        $hours = $billable = $education = $holiday = $vacation = 0;
+        $hours = $billable = $education = $holiday = $time_off = $vacation = 0;
         $illness['normal'] = $illness['child'] = 0;
         $billability['raw'] = $billability['calculated'] = 0;
         $extra = [];
@@ -248,10 +321,13 @@ class EntryRepository extends EntityRepository
                 if ($entry->getTasks()->getName() == 'Helligdag') {
                     $holiday += $entry->getHours();
                 }
-                if ($entry->getTasks()->getName() == 'Ferie') {
+                else if ($entry->getTasks()->getName() == 'Ferie') {
                     $vacation += $entry->getHours();
                 }
-                if ($entry->getTasks()->getName() == 'Sygdom' || $entry->getTasks()->getName() == 'Barns første sygedag') {
+                else if ($entry->getTasks()->getName() == 'Holder fri') {
+                    $time_off += $entry->getHours();
+                }
+                else if ($entry->getTasks()->getName() == 'Sygdom' || $entry->getTasks()->getName() == 'Barns første sygedag') {
                     if ($entry->getTasks()->getName() == 'Sygdom') {
                         $illness['normal'] += $entry->getHours();
                     }
@@ -259,7 +335,7 @@ class EntryRepository extends EntityRepository
                         $illness['child'] += $entry->getHours();
                     }
                 }
-                if ($entry->getTasks()->getName() == 'Uddannelse/Kursus') {
+                else if ($entry->getTasks()->getName() == 'Uddannelse/Kursus') {
                     $education += $entry->getHours();
                 }
                 if ($entry->getTasks()->getBillableByDefault() && $entry->getProject()->getBillable()) {
@@ -282,7 +358,7 @@ class EntryRepository extends EntityRepository
         $split_user_id = str_split($user_id, 3);
 
         // Get the actual hours the user is working.
-        $working_hours = $hours - $vacation - $holiday;
+        $working_hours = $hours - $vacation - $holiday - $time_off;
 
         if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
             if ($billable && $working_hours) {
@@ -302,6 +378,7 @@ class EntryRepository extends EntityRepository
                 'billable' => $billable,
                 'billability' => $billability,
                 'holiday' => $holiday,
+                'time_off' => $time_off,
                 'education' => $education,
                 'vacation' => $vacation,
                 'illness' => $illness,
@@ -309,13 +386,13 @@ class EntryRepository extends EntityRepository
         }
 
         return array(
+            'id' => $entry->getUser()->getId(),
             'first_name' => $entry->getUser()->getFirstName(),
             'last_name' => $entry->getUser()->getLastName(),
             'full_name' => $entry->getUser()->getFirstName() . ' ' . $entry->getUser()->getLastName(),
-            'group' => $this->determineRankingGroup($hours, $hours_goal),
             'hours_goal' => $hours_goal,
             'hours_registered' => $hours,
-            'converted_user_id' => implode('/', $split_user_id),
+            'image' => 'https://proxy.harvestfiles.com/production_harvestapp_public/uploads/users/avatar/' . implode('/', $split_user_id) . '/normal.jpg',
             'extra' => $extra,
         );
     }
