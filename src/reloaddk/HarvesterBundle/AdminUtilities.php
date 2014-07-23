@@ -6,6 +6,8 @@ use Symfony\Component\Security\Csrf\TokenGenerator\UriSafeTokenGenerator;
 class AdminUtilities
 {
     /**
+     * Generate a 6 character random string.
+     *
      * @return string
      */
     public function generatePassword() {

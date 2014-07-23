@@ -20,6 +20,8 @@ class AdminUserForm
     }
 
     /**
+     * Create user formular.
+     *
      * @param User $user
      * @return \Symfony\Component\Form\Form
      */

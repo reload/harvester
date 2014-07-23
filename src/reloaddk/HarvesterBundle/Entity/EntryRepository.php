@@ -167,18 +167,24 @@ class EntryRepository extends EntityRepository
         foreach ($query_result as $user) {
             // If the user is active and isn't a contractor.
             if ($user->getUser()->getIsActive() && !$user->getUser()->getIsContractor()) {
+
                 // And the user isn't an old user (@TODO: Explain why we do this??).
                 if (!array_key_exists($user->getUser()->getId(), $old_user) || count($old_user) == 0) {
+
                     // Provide a default value for "expected hours per day (7.5),
                     // if no specifics have been provided.
                     $working_hours = $user->getUser()->getWorkingHours() != 0 ? $user->getUser()->getWorkingHours() : 7.5;
+
                     // Calculate the expected amount of hours registered in a period/range.
                     $hours_in_range += $working_hours * $working_days_in_range;
+
                     // Push the user-id to the "old user" array and set the value as "true".
                     $old_user[$user->getUser()->getId()] = true;
                 }
+
                 // Add the users hours to the total sum of expected hours, for all users.
                 $hours += $user->getHours();
+
                 // Push the user to an array, holding all users.
                 $user_entries[$user->getUser()->getId()][] = $user;
             }
@@ -236,6 +242,7 @@ class EntryRepository extends EntityRepository
         // If: "to" is the same month / year as the current month / year.
         // Or: "to" is greater than the current month / year.
         if (($to->format('Ym') === $today->format('Ym')) OR ($to->format('Ym') > $today->format('Ym'))) {
+
             // If "to" is greater than or equal to the current date.
             if ($to >= $today) {
                 // Set "to", to the current date.
@@ -250,14 +257,17 @@ class EntryRepository extends EntityRepository
         else {
             $to->modify('+1 day');
         }
+
         // Set the date interval to be "1 day" (P1D means: Period = 1 Day).
         $interval = new DateInterval('P1D');
+
         // Get the period from the "from" date to the "to" date,
         // based on 1 day periods.
         $periods = new DatePeriod($from, $interval, $to);
 
         // Find amount of work days.
         $work_days = 0;
+
         // We loop through each period/day and find each "N" that's between
         // 1 to 5 (mon - fri).
         foreach ($periods as $period) {
@@ -283,13 +293,17 @@ class EntryRepository extends EntityRepository
 
         if($performance >= 110) {
             $group = "A-karmahunter";
-        } elseif ($performance < 110 && $performance >= 98) {
+        }
+        else if ($performance < 110 && $performance >= 98) {
             $group = "B-goalie";
-        } elseif ($performance < 98 && $performance >= 80) {
+        }
+        else if ($performance < 98 && $performance >= 80) {
             $group = "C-karmauser";
-        } else {
+        }
+        else {
             $group = "D-slacker";
         }
+
         return $group;
     }
 
