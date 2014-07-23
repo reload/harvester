@@ -36,6 +36,16 @@ class AdminUserForm
                     'value' => null,
                     'class' => 'form-control',
                 )))
+            ->add('isAdmin', 'choice', array(
+                'label' => 'Administrator',
+                'choices' => array(
+                    0 => 'No',
+                    1 => 'Yes',
+                ),
+                'attr' => array(
+                    'value' => null,
+                    'class' => 'form-control',
+                )))
             ->add('save', 'submit', array(
                 'validation_groups' => false,
                 'attr' => array(
