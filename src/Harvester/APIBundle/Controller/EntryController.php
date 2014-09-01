@@ -101,15 +101,20 @@ class EntryController extends FOSRestController
         $date_today = new DateTime('today');
 
         // If: it's the first day of the month.
-        // Or: we're within the first 3 days of the month, and the first day is monday.
-        if ((date("j") == 1) || (date("j") < 4 && date("w") == 1)) {
-            // Then we're showing the last month.
+        // Or: we're within the first 3 days of the month and the current day isn't saturday/sunday/monday.
+        if ((date('j') == 1 || (date('j') < 4 && in_array(date('w'), array(6,7,1))))) {
+            // Then we're showing the previous month.
             $date_from = new DateTime('first day of last month 00:00:00');
             $date_to = new DateTime('last day of last month 23:59:59');
         }
 
         // If the month and year params is set.
-        if ($month && $year) {
+        // And: the request isn't the beginning of the current month,
+        //      when we don't have any data yet.
+        if (($month && $year)
+        && !(((date('j') == 1 || (date('j') < 4 && in_array(date('w'), array(6,7,1)))) &&
+            ((strtolower($month) == strtolower(date('M')) || strtolower($month) == strtolower(date('F'))) && $year == date('Y'))))) {
+            // Set the range to the requested month.
             $date_from = new DateTime('first day of ' . $month . ' ' . $year . '00:00:00');
             $date_to = new DateTime('last day of ' . $month . ' ' . $year . '23:59:59');
 
