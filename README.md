@@ -65,10 +65,13 @@ To fetch updated data from this month
     app/console harvester:fetch `date "+%Y%m01"`
 
 To fetch that has been updated since yesterday
+
     app/console harvester:fetch --updated-yesterday
 
 To delete entries and repopulate within a given timespan
+
     app/console harvester:refresh `date "+%Y%m01"`
 
 To delete entries and repopulate within a static amount of days
+
     app/console harvester:refresh --days=30
