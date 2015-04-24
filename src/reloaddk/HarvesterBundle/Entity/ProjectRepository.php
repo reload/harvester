@@ -36,7 +36,7 @@ class ProjectRepository extends EntityRepository
             $project_last_update = new DateTime($harvest_project->get('updated-at'));
 
             if ($project->getUpdatedAt()->getTimestamp() < $project_last_update->getTimestamp()-3600) {
-                $this->saveProject($project, $harvest_project);
+                $this->saveProject($project, $harvest_project, $api);
                 $output->writeln('<info>'.$harvest_project->get('name') .  ' have been updated.</info>');
             }
             else {
