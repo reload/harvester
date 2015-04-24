@@ -1,0 +1,50 @@
+parameters:
+  admin_controller.class: reloaddk\HarvesterBundle\Controller\AdminController
+  kernel.listener.security.class: reloaddk\HarvesterBundle\AccessDeniedHandler
+
+services:
+  admin_controller:
+    class: %admin_controller.class%
+    arguments:
+      - @doctrine
+      - @admin_user_form
+      - @session
+      - @admin_mailer
+      - @router
+      - @templating
+      - @admin_utilities
+
+  admin_user_form:
+    class: reloaddk\HarvesterBundle\AdminUserForm
+    arguments:
+      - @form.factory
+
+  admin_mailer:
+    class: reloaddk\HarvesterBundle\AdminMailer
+    arguments:
+      - @mailer
+      - @templating
+
+  admin_utilities:
+    class: reloaddk\HarvesterBundle\AdminUtilities
+
+  harvest_adapter:
+    class: reloaddk\HarvesterBundle\HarvestAdapter
+    arguments:
+      - @harvest_adapter_extended_api
+      - %mattvick_harvest_app.user%
+      - %mattvick_harvest_app.password%
+      - %mattvick_harvest_app.account%
+      - %mattvick_harvest_app.ssl%
+      - %mattvick_harvest_app.mode%
+
+  harvest_adapter_reports:
+    class: HarvestReports
+
+  harvest_adapter_extended_api:
+    class: reloaddk\HarvesterBundle\ExtendedHarvestAPI
+
+  kernel.listener.access_denied.handler:
+    class: %kernel.listener.security.class%
+    arguments:
+      - @templating

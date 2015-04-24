@@ -1,0 +1,29 @@
+{% if form %}
+
+    <div class="panel panel-default">
+        <div class="panel-heading">{{ user.firstName ~ ' ' ~ user.lastName }}</div>
+        <div class="panel-body">
+            {{ form_start(form, {'attr': {'novalidate': true, 'role': 'form', 'class': ' '}}) }}
+            <div class="row">
+                <div class="form-group col-xs-4">
+                    {{ form_row(form.workingHours, {'attr': { 'class': 'form-control'}}) }}
+                    <span class="help-block">Set working hours per week. If not set default 7.5 is used.</span>
+                </div>
+                <div class="form-group col-xs-4">
+                    {{ form_row(form.password, {'attr': { 'class': 'form-control'}}) }}
+                    <span class="help-block">Set the user password. If field is empty, nothing is changed in database.</span>
+                </div>
+                <div class="form-group col-xs-2">
+                    {{ form_row(form.isAdmin, {'attr': { 'class': 'form-control'}}) }}
+                    <span class="help-block">Define if user is granted with administrator role.</span>
+                </div>
+            </div>
+            <div class="">
+                <div class="form-group">
+                    {{ form_row(form.save, {'label': 'Save User', 'attr': { 'class': 'btn btn-default'}}) }}
+                </div>
+            </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endif %}

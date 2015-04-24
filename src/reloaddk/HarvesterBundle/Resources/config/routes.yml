@@ -1,0 +1,11 @@
+harvester_api_Entry:
+    type: rest
+    prefix: /v1
+    resource: "reloaddk\HarvesterBundle\Controller\ApiEntryController"
+    name_prefix:  api_1_ # naming collision
+
+harvester_api_User:
+    type: rest
+    prefix: /v1
+    resource: "reloaddk\HarvesterBundle\Controller\ApiUserController"
+    name_prefix:  api_1_ # naming collision
