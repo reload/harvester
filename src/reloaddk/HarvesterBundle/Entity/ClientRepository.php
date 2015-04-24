@@ -27,7 +27,7 @@ class ClientRepository extends EntityRepository
      */
     public function registerClient(Harvest_Client $harvest_client, ConsoleOutput $output)
     {
-        $client = $this->getEntityManager()->getRepository('reloadHarvesterBundle:Client')->findOneById($harvest_client->get('id'));
+        $client = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Client')->findOneById($harvest_client->get('id'));
 
         if (!$client) {
             // If the client doesn't exist locally, create it.
