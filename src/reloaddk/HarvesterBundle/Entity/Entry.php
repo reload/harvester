@@ -104,6 +104,13 @@ class Entry
     protected $tasks;
 
     /**
+     * @var integer
+     *
+     * @ORM\Column(name="status", type="integer", options={"default" = 1})
+     */
+    protected $status;
+
+    /**
      * Set id
      *
      * @param integer $id
@@ -400,5 +407,28 @@ class Entry
     public function getTasks()
     {
         return $this->tasks;
+    }
+
+    /**
+     * Set status
+     *
+     * @param integer
+     * @return integer
+     */
+    public function setStatus($status)
+    {
+      $this->status = $status;
+
+      return $this;
+    }
+
+    /**
+     * Get status
+     *
+     * @return integer
+     */
+    public function getStatus()
+    {
+      return $this->status;
     }
 }

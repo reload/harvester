@@ -134,6 +134,7 @@ class EntryRepository extends EntityRepository
         $entry->setTimerStartedAt(new DateTime($harvest_entry->get('timer-started-at')));
         $entry->setUpdatedAt(new DateTime($harvest_entry->get('updated-at')));
         $entry->setCreatedAt(new DateTime($harvest_entry->get('created-at')));
+        $entry->setStatus(1);
 
         // Insert data into database.
         $em = $this->getEntityManager();
