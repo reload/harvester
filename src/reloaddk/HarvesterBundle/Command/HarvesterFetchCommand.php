@@ -159,9 +159,6 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 // Register or update user.
                 $user_repository->registerUser($api_user, $input, $output);
 
-                $doctrine->getManager()->getRepository('reloaddkHarvesterBundle:User')
-                    ->registerUser($api_user, $input, $output);
-
                 // Set range for the Harvest data.
                 $range = new Harvest_Range($from_date->format('Ymd'), $to_date->format('Ymd'));
 
