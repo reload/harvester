@@ -157,9 +157,10 @@ class ApiEntryController extends FOSRestController
 
         // Limit the query to a date span.
         $query
-            ->where('e.spentAt >= :date_from AND e.spentAt < :date_to')
+            ->where('e.spentAt >= :date_from AND e.spentAt < :date_to AND e.status = :status')
             ->setParameter('date_from', $date_from, \Doctrine\DBAL\Types\Type::DATETIME)
-            ->setParameter('date_to', $date_to, \Doctrine\DBAL\Types\Type::DATETIME);
+            ->setParameter('date_to', $date_to, \Doctrine\DBAL\Types\Type::DATETIME)
+            ->setParameter('status', 1);
 
         // If group GET param is set, generate a Entry repository function name.
         if ($group) {
