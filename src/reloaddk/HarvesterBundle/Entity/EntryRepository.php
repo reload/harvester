@@ -190,7 +190,6 @@ class EntryRepository extends EntityRepository
 
         // Loop through each result / user.
         foreach ($query_result as $user) {
-          var_dump($user);
             // If the user is active and isn't a contractor.
             if ($user->getUser()->getIsActive() && !$user->getUser()->getIsContractor()) {
 
