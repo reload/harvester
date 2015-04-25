@@ -45,7 +45,10 @@ class ApiEntryController extends FOSRestController
      */
     public function getEntryAction($entry_id)
     {
-        $entry = $this->container->get('doctrine.orm.entity_manager')->getRepository('reloaddkHarvesterBundle:Entry')->findOneById($entry_id);
+        $entry = $this->container->get('doctrine.orm.entity_manager')->getRepository('reloaddkHarvesterBundle:Entry')->findOneBy(array(
+            'id' => $entry_id,
+            'status' => 1,
+        ));
 
         $view = $this->view($entry, $entry ? 200 : 404);
 
