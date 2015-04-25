@@ -143,6 +143,30 @@ class EntryRepository extends EntityRepository
     }
 
     /**
+     * Set the status of an entry to 0.
+     *
+     * @param $entry_id
+     * @param OutputInterface $output
+     */
+    public function updateEntryStatus($entry_id, OutputInterface $output)
+    {
+        // Get the requested entry.
+        $em = $this->getEntityManager();
+        $entry = $em->getRepository('reloaddkHarvesterBundle:Entry')->findOneBy(array(
+            'id' => $entry_id,
+        ));
+
+        // set the status and save the change.
+        $entry->setStatus(0);
+        $em->flush();
+
+        // Provide feedback to the user.
+        if ($entry) {
+            $output->writeln('<comment>--> Entry [' . $entry_id . '] status updated.</comment>');
+        }
+    }
+
+    /**
      * Group doctrine data by user.
      *
      * @param \Doctrine\ORM\QueryBuilder $query
@@ -166,6 +190,7 @@ class EntryRepository extends EntityRepository
 
         // Loop through each result / user.
         foreach ($query_result as $user) {
+          var_dump($user);
             // If the user is active and isn't a contractor.
             if ($user->getUser()->getIsActive() && !$user->getUser()->getIsContractor()) {
 
