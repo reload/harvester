@@ -115,7 +115,7 @@ This will overwrite and values given to "from-date" and "to-date".')
             // Fetch user entries from the DB.
             $query = $entry_repository->createQueryBuilder('e');
             $query
-                ->where('e.userId = :uid AND e.spentAt >= :date_from AND e.spentAt < :date_to')
+                ->where('e.user = :uid AND e.spentAt >= :date_from AND e.spentAt < :date_to')
                 ->setParameter('uid', $user->id)
                 ->setParameter('date_from', $from_date->format('Y-m-d'))
                 ->setParameter('date_to', $to_date->format('Y-m-d'));

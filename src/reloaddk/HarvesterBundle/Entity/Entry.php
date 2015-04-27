@@ -134,29 +134,6 @@ class Entry
     }
 
     /**
-     * Set userId
-     *
-     * @param integer $userId
-     * @return Entry
-     */
-    public function setUserId($userId)
-    {
-        $this->userId = $userId;
-
-        return $this;
-    }
-
-    /**
-     * Get userId
-     *
-     * @return integer 
-     */
-    public function getUserId()
-    {
-        return $this->userId;
-    }
-
-    /**
      * Set notes
      *
      * @param string $notes
