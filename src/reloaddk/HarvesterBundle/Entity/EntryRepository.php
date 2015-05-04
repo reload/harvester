@@ -337,12 +337,12 @@ class EntryRepository extends EntityRepository
      * Parse the user ranking into an array.
      *
      * @param $user_entries
-     * @param int $workingdays_to_now
+     * @param int $workingdays_in_range
      * @param float $user_working_hours
      * @param string $token
      * @return array
      */
-    public function parseUser(Array $user_entries, $workingdays_to_now, $user_working_hours = null, $token = null)
+    public function parseUser(Array $user_entries, $workingdays_in_range, $user_working_hours = null, $token = null)
     {
         $hours = $billable = $education = $holiday = $time_off = $vacation = 0;
         $illness['normal'] = $illness['child'] = 0;
@@ -390,7 +390,7 @@ class EntryRepository extends EntityRepository
         }
 
         // Get the normed hours for this month.
-        $hours_goal = $workingdays_to_now * $user_working_hours;
+        $hours_goal = $workingdays_in_range * $user_working_hours;
 
         // Split user id, used for creating path to user avatar from Harvest!
         $user_id = str_pad($entry->getUser()->getId(), 9, 0, STR_PAD_LEFT);
@@ -414,14 +414,19 @@ class EntryRepository extends EntityRepository
             }
 
             $extra = array(
-                'billable' => $billable,
-                'billability' => $billability,
+                'billable_hours' => $billable,
+                'billability' => array(
+                  'of_total_hours' => $billability['raw'],
+                  'of_working_hours' => $billability['calculated'],
+                  'hours_pr_day' => round($billable / $workingdays_in_range, 2),
+                ),
                 'holiday' => $holiday,
                 'time_off' => $time_off,
                 'education' => $education,
                 'vacation' => $vacation,
                 'illness' => $illness,
                 'working_hours' => $working_hours,
+                'working_days' => $workingdays_in_range,
             );
         }
 
