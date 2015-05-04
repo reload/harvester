@@ -116,6 +116,8 @@ class AdminController
     /**
      * @Route("/admin/users/{user_id}/generate_password", name="_generatepassword")
      * @param $user_id
+     *
+     * @return RedirectResponse
      */
     public function generatePasswordAction($user_id = null)
     {
