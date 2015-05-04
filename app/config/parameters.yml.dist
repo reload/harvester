@@ -15,6 +15,7 @@ parameters:
     secret:            ThisTokenIsNotSoSecretChangeIt
 
     default_hours_per_day:  7.5
+    default_billable_hours_goal: 6
 
 mattvick_harvest_app:
     user:      'harvest_account_email@email.com'

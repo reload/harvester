@@ -80,6 +80,14 @@ class User implements AdvancedUserInterface
     private $workingHours;
 
     /**
+     * @var float
+     *
+     * @ORM\Column(name="billable_hours_goal", type="float", nullable=true, options={"default": null})
+     * @Expose
+     */
+    private $billableHoursGoal;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="password", type="string", nullable=true, options={"default": null})
@@ -350,6 +358,29 @@ class User implements AdvancedUserInterface
     public function getWorkingHours()
     {
         return $this->workingHours;
+    }
+
+    /**
+     * Set billableHoursGoal.
+     *
+     * @param $billableHoursGoal
+     * @return $this
+     */
+    public function setBillableHoursGoal($billableHoursGoal)
+    {
+        $this->billableHoursGoal = $billableHoursGoal;
+
+        return $this;
+    }
+
+    /**
+     * Get billableHoursGoal.
+     *
+     * @return float
+     */
+    public function getBillableHoursGoal()
+    {
+        return $this->billableHoursGoal;
     }
 
     /**

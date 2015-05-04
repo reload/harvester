@@ -33,6 +33,11 @@ class AdminUserForm
                     'placeholder' => 'Eg. 7.5',
                     'class' => 'form-control',
                 )))
+            ->add('billableHoursGoal', 'text', array(
+                'attr' => array(
+                    'placeholder' => 'Eg. 6',
+                    'class' => 'form-control',
+                )))
             ->add('password', 'text', array(
                 'attr' => array(
                     'value' => null,
