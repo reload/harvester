@@ -415,7 +415,7 @@ class EntryRepository extends EntityRepository
 
             // Extra information for admins and logged in users.
             $extra = array(
-                'billable' => $billable_hours,
+                'billable_hours' => $billable_hours,
                 'billability' => array(
                     'of_total_hours' => $billability['raw'],
                     'of_working_hours' => $billability['calculated'],
