@@ -397,7 +397,7 @@ class EntryRepository extends EntityRepository
         $split_user_id = str_split($user_id, 3);
 
         // Get the actual hours the user is working.
-        $working_hours = $hours - $vacation - $holiday - $time_off;
+        $working_hours = $hours - $vacation - $holiday - $time_off - $education;
 
         if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
             if ($billable && $working_hours) {
@@ -421,6 +421,7 @@ class EntryRepository extends EntityRepository
                 'education' => $education,
                 'vacation' => $vacation,
                 'illness' => $illness,
+                'working_hours' => $working_hours,
             );
         }
 
