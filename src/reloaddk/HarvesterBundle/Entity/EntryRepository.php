@@ -344,10 +344,10 @@ class EntryRepository extends EntityRepository
      */
     public function parseUser(Array $user_entries, $workingdays_in_range, $user_working_hours = null, $token = null)
     {
-        $hours = $billable = $education = $holiday = $time_off = $vacation = 0;
+        $hours = $billable_hours = $education = $holiday = $time_off = $vacation = 0;
         $illness['normal'] = $illness['child'] = 0;
         $billability['raw'] = $billability['calculated'] = 0;
-        $extra = [];
+        $extra = $admin = [];
         $user = false;
 
         if ($token) {
@@ -378,7 +378,7 @@ class EntryRepository extends EntityRepository
                     $education += $entry->getHours();
                 }
                 if ($entry->getTasks()->getBillableByDefault() && $entry->getProject()->getBillable()) {
-                    $billable += $entry->getHours();
+                    $billable_hours += $entry->getHours();
                 }
             }
             $hours += $entry->getHours();
@@ -400,12 +400,12 @@ class EntryRepository extends EntityRepository
         $working_hours = $hours - $vacation - $holiday - $time_off - $education;
 
         if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
-            if ($billable && $working_hours) {
+            if ($billable_hours && $working_hours) {
                 // Calculate billability percent from the actual working hours.
-                $billability['calculated'] = round($billable / $working_hours * 100, 2);
+                $billability['calculated'] = round($billable_hours / $working_hours * 100, 2);
 
                 // Calculate billability percent from total amount of hours.
-                $billability['raw'] = round($billable / $hours * 100, 2);
+                $billability['raw'] = round($billable_hours / $hours * 100, 2);
             }
 
             // If no illness is registered, minimize output.
@@ -415,11 +415,11 @@ class EntryRepository extends EntityRepository
 
             // Extra information for admins and logged in users.
             $extra = array(
-                'billable_hours' => $billable,
+                'billable' => $billable_hours,
                 'billability' => array(
                     'of_total_hours' => $billability['raw'],
                     'of_working_hours' => $billability['calculated'],
-                    'hours_pr_day' => round($billable / $workingdays_in_range, 2),
+                    'hours_pr_day' => round($billable_hours / $workingdays_in_range, 2),
                 ),
                 'holiday' => $holiday,
                 'time_off' => $time_off,
@@ -428,6 +428,26 @@ class EntryRepository extends EntityRepository
                 'illness' => $illness,
                 'working_hours' => $working_hours,
                 'working_days' => $workingdays_in_range,
+            );
+        }
+
+        // Extra information for admins.
+        if ((is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
+            // Provide a default value for "billable hours goal per day (6),
+            // if no specifics have been provided.
+            // @TODO: Find a way to fetch the value from app/config/parameters.yml.
+            $goal = $user->getBillabilityGoal() != NULL ? $user->getBillabilityGoal() : 75;
+            // Calculate the billable hours to reach compared to the goal.
+            $billable_hours_to_reach = ($goal / 100) * $working_hours;
+            // Find the current performance compared to the provided goal.
+            // Ex: 75 billable_hours / 100 billable_hours_to_reach = 75% performance.
+            $calculated_goal = ($billable_hours / $billable_hours_to_reach) * 100;
+
+            $admin = array(
+                'billability' => array(
+                    'billable_hours_to_reach' => round($billable_hours_to_reach, 2),
+                    'performance' => round($calculated_goal, 2),
+                ),
             );
         }
 
@@ -440,6 +460,7 @@ class EntryRepository extends EntityRepository
             'hours_registered' => $hours,
             'image' => 'https://proxy.harvestfiles.com/production_harvestapp_public/uploads/users/avatar/' . implode('/', $split_user_id) . '/normal.jpg',
             'extra' => $extra,
+            'admin' => $admin,
         );
     }
 }
