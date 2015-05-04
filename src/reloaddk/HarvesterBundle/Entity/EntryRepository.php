@@ -413,12 +413,13 @@ class EntryRepository extends EntityRepository
                 $illness = false;
             }
 
+            // Extra information for admins and logged in users.
             $extra = array(
                 'billable_hours' => $billable,
                 'billability' => array(
-                  'of_total_hours' => $billability['raw'],
-                  'of_working_hours' => $billability['calculated'],
-                  'hours_pr_day' => round($billable / $workingdays_in_range, 2),
+                    'of_total_hours' => $billability['raw'],
+                    'of_working_hours' => $billability['calculated'],
+                    'hours_pr_day' => round($billable / $workingdays_in_range, 2),
                 ),
                 'holiday' => $holiday,
                 'time_off' => $time_off,
