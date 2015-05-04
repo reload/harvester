@@ -82,10 +82,10 @@ class User implements AdvancedUserInterface
     /**
      * @var float
      *
-     * @ORM\Column(name="billable_hours_goal", type="float", nullable=true, options={"default": null})
+     * @ORM\Column(name="billability_goal", type="float", nullable=true, options={"default": null})
      * @Expose
      */
-    private $billableHoursGoal;
+    private $billabilityGoal;
 
     /**
      * @var string
@@ -361,14 +361,14 @@ class User implements AdvancedUserInterface
     }
 
     /**
-     * Set billableHoursGoal.
+     * Set billabilityGoal.
      *
-     * @param $billableHoursGoal
+     * @param $billabilityGoal
      * @return $this
      */
-    public function setBillableHoursGoal($billableHoursGoal)
+    public function setBillabilityGoal($billabilityGoal)
     {
-        $this->billableHoursGoal = $billableHoursGoal;
+        $this->billabilityGoal = $billabilityGoal;
 
         return $this;
     }
@@ -378,9 +378,9 @@ class User implements AdvancedUserInterface
      *
      * @return float
      */
-    public function getBillableHoursGoal()
+    public function getBillabilityGoal()
     {
-        return $this->billableHoursGoal;
+        return $this->billabilityGoal;
     }
 
     /**

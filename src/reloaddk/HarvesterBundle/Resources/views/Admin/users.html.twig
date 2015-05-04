@@ -19,7 +19,7 @@
             <th>Name</th>
             <th>Email</th>
             <th>Working hours per day</th>
-            <th>Billable hours per day</th>
+            <th>Billability percent goal</th>
             <th>Active</th>
             <th>Admin</th>
             <th>Contractor</th>
@@ -32,7 +32,7 @@
                 <td>{{ user.firstName ~ ' ' ~ user.lastName}}</td>
                 <td>{{ user.email }}</td>
                 <td>{%  if user.workingHours > 0 %}{{ user.workingHours }}{% else %}{{ default_hours_per_day }}{% endif %}</td>
-                <td>{%  if user.billableHoursGoal > 0 %}{{ user.billableHoursGoal }}{% else %}{{ default_billable_hours_goal }}{% endif %}</td>
+                <td>{%  if user.billabilityGoal > 0 %}{{ user.billabilityGoal }}{% else %}{{ default_billability_goal }}{% endif %}</td>
                 <td>{{ user.isActive ? 'Yes' : 'No' }}</td>
                 <td>{% if (user.isAdmin or user.hasRole('ROLE_ADMIN')) %}<strong>Yes</strong>{% else %}No{% endif %}</td>
                 <td>{{ user.isContractor ? 'Yes' : 'No' }}</td>

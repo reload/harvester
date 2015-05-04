@@ -35,7 +35,7 @@ twig:
     strict_variables: "%kernel.debug%"
     globals:
         default_hours_per_day: %default_hours_per_day%
-        default_billable_hours_goal: %default_billable_hours_goal%
+        default_billability_goal: %default_billability_goal%
 
 # Assetic Configuration
 assetic:
