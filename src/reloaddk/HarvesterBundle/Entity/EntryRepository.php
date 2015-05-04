@@ -446,6 +446,7 @@ class EntryRepository extends EntityRepository
             $admin = array(
                 'billability' => array(
                     'billable_hours_to_reach' => round($billable_hours_to_reach, 2),
+                    'goal' => round($goal, 2),
                     'performance' => round($calculated_goal, 2),
                 ),
             );
