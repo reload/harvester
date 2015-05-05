@@ -23,13 +23,13 @@ class EntryRepository extends EntityRepository
 {
 
     /**
-     * Register the new Entry.
+     * Register the new Entries.
      *
      * @param Harvest_Result $user_entries
      * @param $output
      * @param HarvestReports $api
      */
-    public function registerEntry(Harvest_Result $user_entries, OutputInterface $output, HarvestReports $api)
+    public function saveEntries(Harvest_Result $user_entries, OutputInterface $output, HarvestReports $api)
     {
         // We loop through each entry and prepare them to be written, while also getting
         // getting information about how many entries are ready to be updated or created.

@@ -167,7 +167,7 @@ class HarvesterFetchCommand extends ContainerAwareCommand
 
                 // Save users entries if any is available.
                 if ($user_entries->isSuccess() && count($user_entries->get('data'))) {
-                    $entry_repository->registerEntry($user_entries, $output, $api);
+                    $entry_repository->saveEntries($user_entries, $output, $api);
                 }
             }
         }
