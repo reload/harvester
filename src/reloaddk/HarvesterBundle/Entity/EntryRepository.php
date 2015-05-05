@@ -216,7 +216,7 @@ class EntryRepository extends EntityRepository
         // Define default values.
         $hours = 0;
         $hours_in_range = $hours_to_today = null;
-        $users = $old_user = $user_entries = [];
+        $users = $user_entries = [];
 
         $working_days_in_range = $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), $date_to->getValue()->format('Ymd'));
 
@@ -224,22 +224,14 @@ class EntryRepository extends EntityRepository
         foreach ($query_result as $user) {
             // If the user is active and isn't a contractor.
             if ($user->getUser()->getIsActive() && !$user->getUser()->getIsContractor()) {
+                // Provide a default value for "expected hours per day (7.5),
+                // if no specifics have been provided.
+                $working_hours = $user->getUser()->getWorkingHours() != 0 ? $user->getUser()->getWorkingHours() : 7.5;
 
-                // And the user isn't an old user (@TODO: Explain why we do this??).
-                if (!array_key_exists($user->getUser()->getId(), $old_user) || count($old_user) == 0) {
+                // Calculate the expected amount of hours registered in a period/range.
+                $hours_in_range += $working_hours * $working_days_in_range;
 
-                    // Provide a default value for "expected hours per day (7.5),
-                    // if no specifics have been provided.
-                    $working_hours = $user->getUser()->getWorkingHours() != 0 ? $user->getUser()->getWorkingHours() : 7.5;
-
-                    // Calculate the expected amount of hours registered in a period/range.
-                    $hours_in_range += $working_hours * $working_days_in_range;
-
-                    // Push the user-id to the "old user" array and set the value as "true".
-                    $old_user[$user->getUser()->getId()] = true;
-                }
-
-                // Add the users hours to the total sum of expected hours, for all users.
+                // Add the users hours to the total sum of expected hours.
                 $hours += $user->getHours();
 
                 // Push the user to an array, holding all users.
