@@ -175,7 +175,7 @@ class UserRepository extends EntityRepository implements UserProviderInterface
             if ($user->getUpdatedAt()->getTimestamp() < $user_last_update->getTimestamp() - 7200) {
                 // Update user.
                 $this->saveUser($user, $harvest_user, $input, $output);
-                $output->writeln('<comment>--> updated.</comment>');
+                $output->writeln('<comment>--> User information updated.</comment>');
             }
         }
 
