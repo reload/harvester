@@ -95,13 +95,13 @@ class EntryRepository extends EntityRepository
     }
 
     /**
-     * Save Entry to database.
+     * Queue Entry to database.
      *
      * @param Entry $entry
      * @param Harvest_DayEntry $harvest_entry
      * @param HarvestReports $api
      */
-    public function saveEntry(Entry $entry, Harvest_DayEntry $harvest_entry, HarvestReports $api)
+    public function queueEntry(Entry $entry, Harvest_DayEntry $harvest_entry, HarvestReports $api)
     {
         $user = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:User')->findOneById($harvest_entry->get('user-id'));
         $project = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Project')->findOneById($harvest_entry->get('project-id'));
@@ -136,10 +136,32 @@ class EntryRepository extends EntityRepository
         $entry->setCreatedAt(new DateTime($harvest_entry->get('created-at')));
         $entry->setStatus(1);
 
-        // Insert data into database.
+        // Notify the "Unit Of Work" of this entry for the next flush.
         $em = $this->getEntityManager();
         $em->persist($entry);
-        $em->flush();
+    }
+
+    /**
+     * Save Entry to database.
+     *
+     * @param Entry $entry
+     * @param Harvest_DayEntry $harvest_entry
+     * @param HarvestReports $api
+     * @param OutputInterface $output
+     *
+     * @see queueEntry
+     */
+    public function saveEntry(Entry $entry, Harvest_DayEntry $harvest_entry, HarvestReports $api, OutputInterface $output)
+    {
+        // Queue the Entry.
+        $this->queueEntry($entry, $harvest_entry, $api);
+
+        // Write to the database.
+        try {
+            $this->getEntityManager()->flush();
+        } catch (\Doctrine\ORM\OptimisticLockException $e) {
+            $output->writeln('<error>' . $e->getMessage() . '</error>');
+        }
     }
 
     /**
