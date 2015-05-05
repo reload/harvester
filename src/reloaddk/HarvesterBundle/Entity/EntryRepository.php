@@ -31,16 +31,18 @@ class EntryRepository extends EntityRepository
      */
     public function registerEntry(Harvest_Result $user_entries, OutputInterface $output, HarvestReports $api)
     {
+        // We loop through each entry and prepare them to be written, while also getting
+        // getting information about how many entries are ready to be updated or created.
         $count_new_entries = $count_updated_entries = 0;
         foreach ($user_entries->get('data') as $user_entry) {
 
             $entry = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Entry')->findOneById($user_entry->get('id'));
 
             if (!$entry) {
-                $this->saveEntry(new Entry(), $user_entry, $api);
+                $this->queueEntry(new Entry(), $user_entry, $api);
                 ++$count_new_entries;
                 if (!$count_new_entries) {
-                    $output->writeln('<comment>--> Entries created.</comment>');
+                    $output->writeln('<comment>--> Entries queued for insertion.</comment>');
                     ++$count_new_entries;
                 }
             }
@@ -48,24 +50,32 @@ class EntryRepository extends EntityRepository
                 $entry_last_update = new DateTime($user_entry->get('updated-at'));
 
                 if ($entry->getUpdatedAt()->getTimestamp() < $entry_last_update->getTimestamp()-7200) {
-                    $this->saveEntry($entry, $user_entry, $api);
+                    $this->queueEntry($entry, $user_entry, $api);
                     ++$count_updated_entries;
                     if (!$count_updated_entries) {
-                        $output->writeln('<comment>--> Entries updated.</comment>');
+                        $output->writeln('<comment>--> Entries queued for update.</comment>');
                         ++$count_updated_entries;
                     }
                 }
             }
         }
 
-        // Output to screen.
+        // Output feedback to screen.
         if ($count_updated_entries || $count_new_entries) {
             $output->writeln('<comment>--> Entries: </comment>');
             if ($count_new_entries) {
-                $output->writeln('<info>    ' . $count_new_entries . ' created</info>');
+                $output->writeln('<info>    Insert: ' . $count_new_entries . ' queued.</info>');
             }
             if ($count_updated_entries) {
-                $output->writeln('<info>    ' . $count_updated_entries . ' updated</info>');
+                $output->writeln('<info>    Update: ' . $count_updated_entries . ' queued.</info>');
+            }
+
+            // Write all the queued entries to the database.
+            try {
+                $this->getEntityManager()->flush();
+                $output->writeln('<comment>--> Wrote queued entries.</comment>');
+            } catch (\Doctrine\ORM\OptimisticLockException $e) {
+                $output->writeln('<error>' . $e->getMessage() . '</error>');
             }
         }
     }
