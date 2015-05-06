@@ -454,11 +454,11 @@ class EntryRepository extends EntityRepository
         }
 
         // Extra information for admins.
-        if ((is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
-            // Provide a default value for "billable hours goal per day (6),
+        if ((is_object($entry->getUser()) && $entry->getUser()->hasRole('ROLE_ADMIN'))) {
+            // Provide a default value for "billable hours goal per day (75),
             // if no specifics have been provided.
             // @TODO: Find a way to fetch the value from app/config/parameters.yml.
-            $goal = $user->getBillabilityGoal() != NULL ? $user->getBillabilityGoal() : 75;
+            $goal = $entry->getUser()->getBillabilityGoal() != NULL ? $entry->getUser()->getBillabilityGoal() : 75;
             // Calculate the billable hours to reach compared to the goal.
             $billable_hours_to_reach = ($goal / 100) * $working_hours;
             // Find the current performance compared to the provided goal.
