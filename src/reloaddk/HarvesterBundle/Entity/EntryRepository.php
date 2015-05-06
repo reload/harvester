@@ -447,8 +447,6 @@ class EntryRepository extends EntityRepository
                             'billable_hours_to_reach' => round($billable_hours_to_reach, 2),
                             'goal' => round($goal, 2),
                             'performance' => round($calculated_goal, 2),
-                            'test' => $billable_hours,
-                            'test2' => $billable_hours_to_reach,
                         ),
                     );
                 }
