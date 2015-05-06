@@ -223,7 +223,7 @@ class EntryRepository extends EntityRepository
         foreach ($entries as $entry) {
             // If the user is active and isn't a contractor.
             if ($entry->getUser()->getIsActive() && !$entry->getUser()->getIsContractor()) {
-                // Push the user to an array, holding all users.
+                // Categorise the entry by user id.
                 $user_entries[$entry->getUser()->getId()][] = $entry;
             }
         }
