@@ -437,7 +437,7 @@ class EntryRepository extends EntityRepository
                     // @TODO: Find a way to fetch the value from app/config/parameters.yml.
                     $goal = $entry->getUser()->getBillabilityGoal() != NULL ? $entry->getUser()->getBillabilityGoal() : 75;
                     // Calculate the billable hours to reach compared to the goal.
-                    $billable_hours_to_reach = ($goal / 100) * 500;
+                    $billable_hours_to_reach = ($goal / 100) * $working_hours;
                     // Find the current performance compared to the provided goal.
                     // Ex: 75 billable_hours / 100 billable_hours_to_reach = 75% performance.
                     $calculated_goal = ($billable_hours / $billable_hours_to_reach) * 100;
@@ -447,6 +447,8 @@ class EntryRepository extends EntityRepository
                             'billable_hours_to_reach' => round($billable_hours_to_reach, 2),
                             'goal' => round($goal, 2),
                             'performance' => round($calculated_goal, 2),
+                            'test' => $billable_hours,
+                            'test2' => $billable_hours_to_reach,
                         ),
                     );
                 }
