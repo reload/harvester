@@ -125,17 +125,17 @@ class HarvesterUserCommand extends ContainerAwareCommand
         // If user object is set, and we're altering admin or active.
         if ($user) {
             if ($input->getOption('admin')) {
-                if ($input->getOption('admin') == 'no') {
+                if (strtolower($input->getOption('admin')) === 'no') {
                     $user->setIsAdmin(null);
-                } else if ($input->getOption('admin') == 'yes') {
+                } else if (strtolower($input->getOption('admin')) === 'yes') {
                     $user->setIsAdmin(1);
                 }
             }
 
             if ($input->getOption('active')) {
-                if ($input->getOption('active') == 'no') {
+                if (strtolower($input->getOption('active')) === 'no') {
                     $user->setIsActive(null);
-                } else if ($input->getOption('active') == 'yes') {
+                } else if (strtolower($input->getOption('active')) === 'yes') {
                     $user->setIsActive(1);
                 }
             }
