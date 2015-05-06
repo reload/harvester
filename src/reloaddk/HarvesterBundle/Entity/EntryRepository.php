@@ -208,49 +208,39 @@ class EntryRepository extends EntityRepository
      */
     public function groupByUser(\Doctrine\ORM\QueryBuilder $query, $working_hours_per_day = null, $token = null)
     {
+        // Fetch entries from the query.
+        $entries = $query->getQuery()->getResult();
         // Fetch date range from query.
-        $query_result = $query->getQuery()->getResult();
         $date_to = $query->getQuery()->getParameter('date_to');
         $date_from = $query->getQuery()->getParameter('date_from');
 
         // Define default values.
-        $hours = 0;
+        $hours_registered = 0;
         $hours_in_range = $hours_to_today = null;
         $users = $old_user = $user_entries = [];
 
-        $working_days_in_range = $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), $date_to->getValue()->format('Ymd'));
-
-        // Loop through each result / user.
-        foreach ($query_result as $user) {
+        // Categorise entries by user if they are active company employees.
+        foreach ($entries as $entry) {
             // If the user is active and isn't a contractor.
-            if ($user->getUser()->getIsActive() && !$user->getUser()->getIsContractor()) {
-
-                // And the user isn't an old user (@TODO: Explain why we do this??).
-                if (!array_key_exists($user->getUser()->getId(), $old_user) || count($old_user) == 0) {
-
-                    // Provide a default value for "expected hours per day (7.5),
-                    // if no specifics have been provided.
-                    $working_hours = $user->getUser()->getWorkingHours() != 0 ? $user->getUser()->getWorkingHours() : 7.5;
-
-                    // Calculate the expected amount of hours registered in a period/range.
-                    $hours_in_range += $working_hours * $working_days_in_range;
-
-                    // Push the user-id to the "old user" array and set the value as "true".
-                    $old_user[$user->getUser()->getId()] = true;
-                }
-
-                // Add the users hours to the total sum of expected hours, for all users.
-                $hours += $user->getHours();
-
+            if ($entry->getUser()->getIsActive() && !$entry->getUser()->getIsContractor()) {
                 // Push the user to an array, holding all users.
-                $user_entries[$user->getUser()->getId()][] = $user;
+                $user_entries[$entry->getUser()->getId()][] = $entry;
             }
         }
 
-        // Loop through each user.
+        // Get total working days in range for calculations when parsing users.
+        $working_days_in_range = $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), $date_to->getValue()->format('Ymd'));
+
+        // Format user-data and calculate total sums of data like "hours in range"
+        // and "hours registered".
         foreach ($user_entries as $user) {
-            // Format the user-data we wish to push to the final array.
-            $users[] = $this->parseUser($user, $working_days_in_range, $working_hours_per_day, $token);
+            // Format and calculate the user categorised entries.
+            $parsed_user = $this->parseUser($user, $working_days_in_range, $working_hours_per_day, $token);
+            // Array of all the parsed users we return.
+            $users[] = $parsed_user;
+            // Add this users data to the sums.
+            $hours_in_range += $parsed_user['hours_goal'];
+            $hours_registered += $parsed_user['hours_registered'];
         }
 
         // Get the first registered entry.
@@ -260,12 +250,12 @@ class EntryRepository extends EntityRepository
 
         // Return the final response.
         return array(
-            'success' => ($query_result ? true : false),
+            'success' => ($entries ? true : false),
             'users' => $users,
             'date_start' => $date_from->getValue()->format('Ymd'),
             'date_end' => $date_to->getValue()->format('Ymd'),
             'hours_in_range' => $hours_in_range,
-            'hours_total_registered' => $hours,
+            'hours_total_registered' => $hours_registered,
             'misc' => array(
                 'working_days_in_range' => $working_days_in_range,
                 'first_entry' => array(
