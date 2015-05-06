@@ -76,10 +76,8 @@ class HarvesterUserCommand extends ContainerAwareCommand
                 "SELECT u
                 FROM reloaddkHarvesterBundle:User u
                 WHERE u.firstName LIKE :search
-                OR
-                u.email LIKE :search
-                OR
-                u.id LIKE :search"
+                OR u.email LIKE :search
+                OR u.id LIKE :search"
             )->setParameter('search', '%' . $input->getOption('search') . '%')
                 ->getResult();
 
