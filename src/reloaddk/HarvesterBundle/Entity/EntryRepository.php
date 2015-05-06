@@ -428,6 +428,28 @@ class EntryRepository extends EntityRepository
 
                 // Calculate billability percent from total amount of hours.
                 $billability['raw'] = round($billable_hours / $hours * 100, 2);
+
+                // Provide admin-only data like "performance" which calculates the percentage
+                // a user is from an admin provided billable goal.
+                if ($user->hasRole('ROLE_ADMIN')) {
+                    // Provide a default value for "billable hours goal per day (75),
+                    // if no specifics have been provided.
+                    // @TODO: Find a way to fetch the value from app/config/parameters.yml.
+                    $goal = $entry->getUser()->getBillabilityGoal() != NULL ? $entry->getUser()->getBillabilityGoal() : 75;
+                    // Calculate the billable hours to reach compared to the goal.
+                    $billable_hours_to_reach = ($goal / 100) * 500;
+                    // Find the current performance compared to the provided goal.
+                    // Ex: 75 billable_hours / 100 billable_hours_to_reach = 75% performance.
+                    $calculated_goal = ($billable_hours / $billable_hours_to_reach) * 100;
+
+                    $admin = array(
+                        'billability' => array(
+                            'billable_hours_to_reach' => round($billable_hours_to_reach, 2),
+                            'goal' => round($goal, 2),
+                            'performance' => round($calculated_goal, 2),
+                        ),
+                    );
+                }
             }
 
             // If no illness is registered, minimize output.
@@ -450,27 +472,6 @@ class EntryRepository extends EntityRepository
                 'illness' => $illness,
                 'working_hours' => $working_hours,
                 'working_days' => $workingdays_in_range,
-            );
-        }
-
-        // Extra information for admins.
-        if ((is_object($entry->getUser()) && $entry->getUser()->hasRole('ROLE_ADMIN'))) {
-            // Provide a default value for "billable hours goal per day (75),
-            // if no specifics have been provided.
-            // @TODO: Find a way to fetch the value from app/config/parameters.yml.
-            $goal = $entry->getUser()->getBillabilityGoal() != NULL ? $entry->getUser()->getBillabilityGoal() : 75;
-            // Calculate the billable hours to reach compared to the goal.
-            $billable_hours_to_reach = ($goal / 100) * $working_hours;
-            // Find the current performance compared to the provided goal.
-            // Ex: 75 billable_hours / 100 billable_hours_to_reach = 75% performance.
-            $calculated_goal = ($billable_hours / $billable_hours_to_reach) * 100;
-
-            $admin = array(
-                'billability' => array(
-                    'billable_hours_to_reach' => round($billable_hours_to_reach, 2),
-                    'goal' => round($goal, 2),
-                    'performance' => round($calculated_goal, 2),
-                ),
             );
         }
 
