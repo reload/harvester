@@ -29,8 +29,7 @@ class UserRepository extends EntityRepository implements UserProviderInterface
      *
      * @param string $username
      * @return mixed|UserInterface
-     * @throws \Doctrine\ORM\NoResultException
-     * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws \Symfony\Component\Security\Core\Exception\UsernameNotFoundException
      */
     public function loadUserByUsername($username)
     {
