@@ -107,6 +107,13 @@ This will overwrite and values given to "from-date" and "to-date".')
 
             // Fetch user entries from Harvest and create an array of IDs.
             $harvest_entries = $extended_api->getUserEntries($user->id, $range);
+
+            // Save the latest entries so we don't compare with an outdated dataset.
+            if ($harvest_entries->isSuccess() && count($harvest_entries->get('data'))) {
+                $entry_repository->saveEntries($harvest_entries, $output, $harvest_api);
+            }
+
+            // Prepare array of Harvests id's to compare them with our DB later.
             $harvest_entries_ids = [];
             foreach ($harvest_entries->get('data') as $entry) {
                 $harvest_entries_ids[] = intval($entry->id);
@@ -121,12 +128,13 @@ This will overwrite and values given to "from-date" and "to-date".')
                 ->setParameter('date_to', $to_date->format('Y-m-d'));
             $db_entries = $query->getQuery()->getResult();
 
+            // Prepare array of our id's to compare them with the Harvest response.
             $db_entries_ids = [];
             foreach ($db_entries as $entry) {
                 $db_entries_ids[] = intval($entry->getId());
             }
 
-            // Find the difference of the two arrays. The difference are deleted entries.
+            // Find the difference of the two id arrays. The difference are deleted entries.
             $diff = array_diff($db_entries_ids, $harvest_entries_ids);
 
             // Update the status of all the entries in the diff array.
