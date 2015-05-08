@@ -111,9 +111,10 @@ class UserRepository extends EntityRepository implements UserProviderInterface
 
     /**
      * Validate the token.
-     * @param EntryController $controller
-     * @param String $token
-     * @return user_id | JsonReponse object
+     *
+     * @param ApiEntryController $controller
+     * @param string $token
+     * @return int user_id | JsonResponse
      */
     static public function validateToken(ApiEntryController $controller, $token = null)
     {
