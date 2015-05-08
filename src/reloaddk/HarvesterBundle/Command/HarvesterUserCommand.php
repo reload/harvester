@@ -59,14 +59,14 @@ class HarvesterUserCommand extends ContainerAwareCommand
         $doctrine = $this->getContainer()->get('doctrine');
 
         // Load User.
-        $userObject = $doctrine->getManager()->getRepository('reloaddkHarvesterBundle:User');
+        $user_repository = $doctrine->getManager()->getRepository('reloaddkHarvesterBundle:User');
 
         // Check if user id or email is argument.
         if (preg_match('/\d+/i', $input->getArgument('user'))) {
-            $user = $userObject->findOneById($input->getArgument('user'));
+            $user = $user_repository->findOneById($input->getArgument('user'));
         }
         else {
-            $user = $userObject->findOneByEmail($input->getArgument('user'));
+            $user = $user_repository->findOneByEmail($input->getArgument('user'));
         }
 
         // Search for users by first_name, email or id.
@@ -122,14 +122,35 @@ class HarvesterUserCommand extends ContainerAwareCommand
 
         // If user object is set, and we're altering admin or active.
         if ($user) {
+            // Option: Admin.
             if ($input->getOption('admin')) {
+                // Argument: No.
                 if (strtolower($input->getOption('admin')) === 'no') {
-                    $user->setIsAdmin(null);
-                } else if (strtolower($input->getOption('admin')) === 'yes') {
-                    $user->setIsAdmin(1);
+                    // Remove the "ROLE_ADMIN" and the admin status.
+                    if ($user->getIsAdmin()) {
+                        $user->setIsAdmin(0);
+                        $userRole = $user_repository->getUserRoleByName('ROLE_ADMIN');
+                        $user->removeUserRole($userRole);
+                        $output->writeln('<info>Removed "ROLE_ADMIN" from ' . $user->getFirstName() . ' ' . $user->getLastName() . '.</info>');
+                    } else {
+                        $output->writeln('<error>' . $user->getFirstName() . ' ' . $user->getLastName() . ' is not an admin.</error>');
+                    }
+                }
+                // Argument: Yes.
+                else if (strtolower($input->getOption('admin')) === 'yes') {
+                    // Provide the "ROLE_ADMIN" and set the user as an admin.
+                    if (!$user->getIsAdmin()) {
+                        $userRole = $user_repository->getUserRoleByName('ROLE_ADMIN');
+                        $user->addUserRole($userRole);
+                        $user->setIsAdmin(1);
+                        $output->writeln('<info>Added "ROLE_ADMIN" to ' . $user->getFirstName() . ' ' . $user->getLastName() . '.</info>');
+                    } else {
+                        $output->writeln('<error>' . $user->getFirstName() . ' ' . $user->getLastName() . ' is already an admin.</error>');
+                    }
                 }
             }
 
+            // Option: Active.
             if ($input->getOption('active')) {
                 if (strtolower($input->getOption('active')) === 'no') {
                     $user->setIsActive(null);
