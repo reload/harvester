@@ -203,33 +203,17 @@ class UserRepository extends EntityRepository implements UserProviderInterface
         $user->setIsContractor($harvest_user->get('is-contractor') == 'true' ? 1 : 0);
         $user->setUpdatedAt(new DateTime($harvest_user->get('updated-at')));
 
-        // Get Role 'ROLE_ADMIN' Object from Role table.
-        $userRole = $this->getEntityManager()
-            ->getRepository('reloaddkHarvesterBundle:Role')
-            ->findOneByName('ROLE_ADMIN');
-
-        // If 'ROLE_ADMIN' doesn't exists, create it.
-        if (!$userRole) {
-            $userRole = new Role();
-
-            $userRole
-                ->setName('ROLE_ADMIN')
-                ->setRole('ROLE_ADMIN');
-
-            $em = $this->getEntityManager();
-            $em->persist($userRole);
-            $em->flush();
-        }
-
         // If the user is admin and don't have admin role set in db.
         if ($user->getIsAdmin() == true && !$user->hasRole('ROLE_ADMIN')) {
             // Add ROLE_ADMIN to the user.
+            $userRole = $this->getUserRoleByName('ROLE_ADMIN');
             $user->addUserRole($userRole);
             $output->writeln('<comment>--> Admin role added.</comment>');
         }
         // If the user isn't admin, and has the ROLE_ADMIN and we aren't preserving the roles.
         elseif ($user->getIsAdmin() == false && $user->hasRole('ROLE_ADMIN') && !$input->getOption('preserve-roles')) {
             // Remove ROLE_ADMIN from user.
+            $userRole = $this->getUserRoleByName('ROLE_ADMIN');
             $user->removeUserRole($userRole);
             $output->writeln('<comment>--> Admin role removed.</comment>');
         }
@@ -239,5 +223,37 @@ class UserRepository extends EntityRepository implements UserProviderInterface
         $em->flush();
 
         return $user;
+    }
+
+    /**
+     * Get a Role Object by name.
+     *
+     * @param String $role
+     * @param Boolean $force
+     * @return Object Role
+     */
+    public function getUserRoleByName($role, $force = false) {
+        // Force role to be uppercase.
+        $role = strtoupper($role);
+
+        // Get Role Object from Role table.
+        $userRole = $this->getEntityManager()
+            ->getRepository('reloaddkHarvesterBundle:Role')
+            ->findOneByName($role);
+
+        // If $role doesn't exists and we force the object, create it.
+        if (!$userRole && $force === false) {
+            $userRole = new Role();
+
+            $userRole
+                ->setName($role)
+                ->setRole($role);
+
+            $em = $this->getEntityManager();
+            $em->persist($userRole);
+            $em->flush();
+        }
+
+        return $userRole;
     }
 }
