@@ -81,7 +81,8 @@ class AdminController
      */
     public function indexAction()
     {
-        return array();
+        // @TODO: Create an actual front page or move "_useredit" route to the front.
+        return new RedirectResponse($this->router->generate('_useredit'));
     }
 
     /**
