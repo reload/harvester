@@ -482,7 +482,6 @@ class EntryRepository extends EntityRepository
             'full_name' => $entry->getUser()->getFirstName() . ' ' . $entry->getUser()->getLastName(),
             'hours_goal' => $hours_goal,
             'hours_registered' => $hours,
-            'image' => 'https://proxy.harvestfiles.com/production_harvestapp_public/uploads/users/avatar/' . implode('/', $split_user_id) . '/normal.png',
             'extra' => $extra,
             'admin' => $admin,
         );
