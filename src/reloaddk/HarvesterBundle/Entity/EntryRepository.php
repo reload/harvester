@@ -480,6 +480,7 @@ class EntryRepository extends EntityRepository
             'first_name' => $entry->getUser()->getFirstName(),
             'last_name' => $entry->getUser()->getLastName(),
             'full_name' => $entry->getUser()->getFirstName() . ' ' . $entry->getUser()->getLastName(),
+            'email' => $entry->getUser()->getEmail(),
             'hours_goal' => $hours_goal,
             'hours_registered' => $hours,
             'extra' => $extra,
