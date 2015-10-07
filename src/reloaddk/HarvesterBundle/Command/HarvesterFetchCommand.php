@@ -169,6 +169,13 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 if ($user_entries->isSuccess() && count($user_entries->get('data'))) {
                     $entry_repository->saveEntries($user_entries, $output, $api);
                 }
+
+                // Garbage collect objects we don't need anymore and tell
+                // Doctrine to release entities too, in order to keep down
+                // memory usage.
+                unset($user_entries);
+                $doctrine->getManager()->flush();
+                $doctrine->getManager()->clear();
             }
         }
     }
