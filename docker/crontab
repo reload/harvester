@@ -3,7 +3,7 @@
 PATH=/usr/bin:/bin:/usr/local/bin
 
 # Fetching data from HarvestAPI every hour.
-30 * * * * www-data /harvester/app/console harvester:fetch --updated-yesterday | logger -t harvester
+30 * * * * www-data /harvester/app/console 2>&1 harvester:fetch --updated-yesterday | logger -t harvester
 
 # Set status to 0 of old entries that no longer exist in Harvest (been deleted).
-0 * * * * www-data /harvester/app/console harvester:fetch:cleaup --days=62 | logger -t harvester
+0 * * * * www-data /harvester/app/console 2>&1 harvester:fetch:cleaup --days=62 | logger -t harvester
