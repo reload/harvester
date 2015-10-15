@@ -54,3 +54,6 @@ then
     # Fix up permissions for webapp.
     chmod a+w -R /harvester/app/cache /harvester/app/logs
 fi
+
+# Ensure that database is writable for www-data.
+chown www-data.www-data /data -R
