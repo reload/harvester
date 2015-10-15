@@ -7,7 +7,7 @@ then
     export HOME=/root
     echo "Cloning and configuring Harvester."
     cd /
-    git clone --branch sqlite https://github.com/reload/harvester.git /harvester
+    git clone https://github.com/reload/harvester.git /harvester
 
     # Link in 
     rm -rf /var/www/html
