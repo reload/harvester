@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Clone, build and setup.
+if [ ! -e /harvester/composer.json ]
+then
+    # Composer needs $HOME
+    export HOME=/root
+    echo "Cloning and configuring Harvester."
+    cd /
+    git clone https://github.com/reload/harvester.git /harvester
+
+    # Link in 
+    rm -rf /var/www/html
+    ln -s /harvester/web /var/www/html
+    
+    cd /harvester
+    cat > /harvester/app/config/parameters.yml <<EOF
+parameters:
+  database_path:     /data/harvester.sqlite
+
+  mailer_transport:  smtp
+  mailer_host:       127.0.0.1
+  mailer_user:       ~
+  mailer_password:   ~
+    
+  locale:            en
+  secret:            $HARVESTER_SECRET
+    
+  default_hours_per_day:  $HARVESTER_HOURS_PER_DAY
+  default_billability_goal: $HARVESTER_BILLABILITY_GOAL
+    
+mattvick_harvest_app:
+  user:      '$HARVESTER_HARVEST_USER'
+  password:  '$HARVESTER_HARVEST_PASSWORD'
+  account:   '$HARVESTER_HARVEST_ACCOUNT'
+EOF
+    composer install --prefer-source
+
+    # Fix up permissions for webapp.
+    chmod a+w -R /harvester/app/cache /harvester/app/logs
+
+fi
+
+if [ ! -e /data/harvester.sqlite ]
+then
+    echo "Creating database."
+    app/console doctrine:database:create
+    app/console doctrine:schema:create
+
+    echo "Initial import."
+    app/console harvester:fetch
+
+    # Fix up permissions for webapp.
+    chmod a+w -R /harvester/app/cache /harvester/app/logs
+fi
+
+# Ensure that database is writable for www-data.
+chown www-data.www-data /data -R
