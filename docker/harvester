@@ -43,7 +43,6 @@ fi
 
 if [ ! -e /data/harvester.sqlite ]
 then
-
     echo "Creating database."
     app/console doctrine:database:create
     app/console doctrine:schema:create

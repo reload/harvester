@@ -1,12 +1,11 @@
 FROM phusion/baseimage:0.9.17
 
 # Need git for cloning Harvester, cron for background tasks and ssmtp
-# to avoid having cron pull in a full blown MTA like Exim.
-RUN apt-get update && \
-    apt-get install -y ssmtp git
-
-# Install apache, php and extensions
-RUN apt-get install -y apache2 php5 php5-sqlite php5-intl php5-curl
+# to avoid having cron pull in a full blown MTA like Exim, and apache,
+# php and extensions
+RUN export DEBIAN_FRONTEND=noninteractive;
+    apt-get update && \
+    apt-get -q install -y ssmtp git apache2 php5 php5-sqlite php5-intl php5-curl
 
 # REST service app requires mod_rewrite.
 RUN a2enmod rewrite
@@ -39,6 +38,4 @@ COPY apache2.service /etc/service/apache2/run
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-
 WORKDIR /harvester
-CMD ["/sbin/my_init"]
