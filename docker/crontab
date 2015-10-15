@@ -6,4 +6,4 @@ PATH=/usr/bin:/bin:/usr/local/bin
 30 * * * * www-data /harvester/app/console 2>&1 harvester:fetch --updated-yesterday | logger -t harvester
 
 # Set status to 0 of old entries that no longer exist in Harvest (been deleted).
-0 * * * * www-data /harvester/app/console 2>&1 harvester:fetch:cleaup --days=62 | logger -t harvester
+0 * * * * www-data /harvester/app/console 2>&1 harvester:fetch:cleanup --days=62 | logger -t harvester
