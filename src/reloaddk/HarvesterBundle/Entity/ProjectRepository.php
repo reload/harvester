@@ -42,7 +42,6 @@ class ProjectRepository extends EntityRepository
                 $output->writeln('<info>'.$harvest_project->get('name') .  ' have been updated.</info>');
             }
             else {
-                $this->saveProject($project, $harvest_project, $api);
                 $output->writeln('<comment>'.$harvest_project->get('name') .  ' is up to date.</comment>');
             }
         }
