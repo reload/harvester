@@ -148,6 +148,9 @@ class HarvesterFetchCommand extends ContainerAwareCommand
         $user_repository = $doctrine->getManager()->getRepository('reloaddkHarvesterBundle:User');
         $entry_repository = $doctrine->getManager()->getRepository('reloaddkHarvesterBundle:Entry');
 
+        // All projects for all entries in this current fetch.
+        $projects = [];
+
         // If we have a valid callback from Harvest.
         if ($api_users->isSuccess()) {
             // Loop through each users.
@@ -170,6 +173,12 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                     $entry_repository->saveEntries($user_entries, $output, $api);
                 }
 
+                // Get projects user has been working on and add it to projects
+                // that should be updateted.
+                foreach ($user_entries->get('data') as $user_entry) {
+                    $projects[$user_entry->get('project-id')] = $user_entry->get('project-id');
+                }
+
                 // Garbage collect objects we don't need anymore and tell
                 // Doctrine to release entities too, in order to keep down
                 // memory usage.
@@ -177,6 +186,10 @@ class HarvesterFetchCommand extends ContainerAwareCommand
                 $doctrine->getManager()->flush();
                 $doctrine->getManager()->clear();
             }
+
+            // Update project data for all projects in this period.
+            $doctrine->getManager()->getRepository('reloaddkHarvesterBundle:Project')
+                ->saveProjects($projects, $output, $api);
         }
     }
 }

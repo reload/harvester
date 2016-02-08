@@ -47,7 +47,9 @@ class EntryRepository extends EntityRepository
                 }
             }
             else {
+
                 $entry_last_update = new DateTime($user_entry->get('updated-at'));
+
 
                 if ($entry->getUpdatedAt()->getTimestamp() < $entry_last_update->getTimestamp()-7200) {
                     $this->queueEntry($entry, $user_entry, $api);
@@ -113,16 +115,10 @@ class EntryRepository extends EntityRepository
      */
     public function queueEntry(Entry $entry, Harvest_DayEntry $harvest_entry, HarvestReports $api)
     {
+
         $user = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:User')->findOneById($harvest_entry->get('user-id'));
         $project = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Project')->findOneById($harvest_entry->get('project-id'));
         $task = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Task')->findOneById($harvest_entry->get('task-id'));
-
-        // If the project doesn't exist in db, create it.
-        if (!$project) {
-            $harvest_project = $api->getProject($harvest_entry->get('project-id'));
-            $project = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Project')
-                ->registerProject($harvest_project->get('data'), new ConsoleOutput(), $api);
-        }
 
         // If the task doesn't exist in db, create it.
         if (!$task) {

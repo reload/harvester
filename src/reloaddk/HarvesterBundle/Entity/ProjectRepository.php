@@ -33,18 +33,36 @@ class ProjectRepository extends EntityRepository
             $output->writeln('<info>' . $harvest_project->get('name') . ' created.</info>');
         }
         else {
+
             $project_last_update = new DateTime($harvest_project->get('updated-at'));
+
 
             if ($project->getUpdatedAt()->getTimestamp() < $project_last_update->getTimestamp()-3600) {
                 $this->saveProject($project, $harvest_project, $api);
                 $output->writeln('<info>'.$harvest_project->get('name') .  ' have been updated.</info>');
             }
             else {
+                $this->saveProject($project, $harvest_project, $api);
                 $output->writeln('<comment>'.$harvest_project->get('name') .  ' is up to date.</comment>');
             }
         }
 
         return $project;
+    }
+
+    /**
+     * Save multiple projects.
+     *
+     * @param Array $projects
+     * @param $output
+     * @param HarvestReports $api
+     */
+    public function saveProjects(Array $projects, ConsoleOutput $output, HarvestReports $api) {
+
+        foreach ($projects as $projectId) {
+            $harvest_project = $api->getProject($projectId);
+            $this->registerProject($harvest_project->get('data'), $output, $api);
+        }
     }
 
     /**
@@ -65,7 +83,6 @@ class ProjectRepository extends EntityRepository
             $client = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Client')
                 ->registerClient($harvest_client->get('data'), new ConsoleOutput(), $api);
         }
-
         // Create project object.
         $project->setId($harvest_project->get('id'));
         $project->setClientId($harvest_project->get('client-id'));
