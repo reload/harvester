@@ -376,37 +376,44 @@ class EntryRepository extends EntityRepository
         // Loop through all user entries and calculate.
         foreach ($user_entries as $entry) {
 
-            $taskName = $entry->getTasks()->getName();
+            $task_name = $entry->getTasks()->getName();
 
             if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
-                if ($taskName == 'Helligdag') {
-                    $holiday += $entry->getHours();
+
+                switch ($task_name) {
+                    case 'Helligdag':
+                        $holiday += $entry->getHours();
+                        break;
+                    case 'Ferie':
+                        $vacation += $entry->getHours();
+                        break;
+                    case 'Holder fri':
+                    case 'Barsel':
+                        if ($task_name == 'Barsel') {
+                            $time_off['paternity_leave'] += $entry->getHours();
+                        } else {
+                            $time_off['normal'] += $entry->getHours();
+                        }
+                        break;
+                    case 'Sygdom':
+                    case 'Barns første sygedag':
+                        if ($task_name == 'Sygdom') {
+                            $illness['normal'] += $entry->getHours();
+                        }
+                        else {
+                            $illness['child'] += $entry->getHours();
+                        }
+                        break;
+                    case 'Uddannelse/Kursus':
+                        $education += $entry->getHours();
+                        break;
                 }
-                else if ($taskName == 'Ferie') {
-                    $vacation += $entry->getHours();
-                }
-                else if ($taskName == 'Holder fri' || $taskName == 'Barsel') {
-                    if ($taskName == 'Barsel') {
-                        $time_off['paternity_leave'] += $entry->getHours();
-                    } else {
-                        $time_off['normal'] += $entry->getHours();
-                    }
-                }
-                else if ($taskName == 'Sygdom' || $taskName == 'Barns første sygedag') {
-                    if ($taskName == 'Sygdom') {
-                        $illness['normal'] += $entry->getHours();
-                    }
-                    else {
-                        $illness['child'] += $entry->getHours();
-                    }
-                }
-                else if ($taskName == 'Uddannelse/Kursus') {
-                    $education += $entry->getHours();
-                }
+
                 if ($entry->getTasks()->getBillableByDefault() && $entry->getProject()->getBillable()) {
                     $billable_hours += $entry->getHours();
                 }
             }
+
             $hours += $entry->getHours();
         }
 
