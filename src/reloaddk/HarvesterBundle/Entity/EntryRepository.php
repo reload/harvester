@@ -362,8 +362,9 @@ class EntryRepository extends EntityRepository
      */
     public function parseUser(Array $user_entries, $workingdays_in_range, $user_working_hours = null, $token = null)
     {
-        $hours = $billable_hours = $education = $holiday = $time_off = $vacation = 0;
+        $hours = $billable_hours = $education = $holiday = $vacation = 0;
         $illness['normal'] = $illness['child'] = 0;
+        $time_off['normal'] = $time_off['paternity_leave'] = 0;
         $billability['raw'] = $billability['calculated'] = 0;
         $extra = $admin = [];
         $user = false;
@@ -374,25 +375,32 @@ class EntryRepository extends EntityRepository
 
         // Loop through all user entries and calculate.
         foreach ($user_entries as $entry) {
+
+            $taskName = $entry->getTasks()->getName();
+
             if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
-                if ($entry->getTasks()->getName() == 'Helligdag') {
+                if ($taskName == 'Helligdag') {
                     $holiday += $entry->getHours();
                 }
-                else if ($entry->getTasks()->getName() == 'Ferie') {
+                else if ($taskName == 'Ferie') {
                     $vacation += $entry->getHours();
                 }
-                else if ($entry->getTasks()->getName() == 'Holder fri') {
-                    $time_off += $entry->getHours();
+                else if ($taskName == 'Holder fri' || $taskName == 'Barsel') {
+                    if ($taskName == 'Barsel') {
+                        $time_off['paternity_leave'] += $entry->getHours();
+                    } else {
+                        $time_off['normal'] += $entry->getHours();
+                    }
                 }
-                else if ($entry->getTasks()->getName() == 'Sygdom' || $entry->getTasks()->getName() == 'Barns første sygedag') {
-                    if ($entry->getTasks()->getName() == 'Sygdom') {
+                else if ($taskName == 'Sygdom' || $taskName == 'Barns første sygedag') {
+                    if ($taskName == 'Sygdom') {
                         $illness['normal'] += $entry->getHours();
                     }
                     else {
                         $illness['child'] += $entry->getHours();
                     }
                 }
-                else if ($entry->getTasks()->getName() == 'Uddannelse/Kursus') {
+                else if ($taskName == 'Uddannelse/Kursus') {
                     $education += $entry->getHours();
                 }
                 if ($entry->getTasks()->getBillableByDefault() && $entry->getProject()->getBillable()) {
@@ -415,7 +423,7 @@ class EntryRepository extends EntityRepository
         $split_user_id = str_split($user_id, 3);
 
         // Get the actual hours the user is working.
-        $working_hours = $hours - $vacation - $holiday - $time_off - $education;
+        $working_hours = $hours - $vacation - $holiday - ($time_off['normal'] + $time_off['paternity_leave']) - $education;
 
         if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
             if ($billable_hours && $working_hours) {
