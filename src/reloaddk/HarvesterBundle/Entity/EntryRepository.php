@@ -12,7 +12,6 @@ use DateInterval;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
-
 /**
  * EntryRepository
  *
@@ -31,12 +30,13 @@ class EntryRepository extends EntityRepository
      */
     public function saveEntries(Harvest_Result $user_entries, OutputInterface $output, HarvestReports $api)
     {
-        // We loop through each entry and prepare them to be written, while also getting
-        // getting information about how many entries are ready to be updated or created.
+        // We loop through each entry and prepare them to be written, while
+        // also getting getting information about how many entries are ready
+        // to be updated or created.
         $count_new_entries = $count_updated_entries = 0;
         foreach ($user_entries->get('data') as $user_entry) {
-
-            $entry = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Entry')->findOneById($user_entry->get('id'));
+            $entry = $this->getEntityManager()
+                ->getRepository('reloaddkHarvesterBundle:Entry')->findOneById($user_entry->get('id'));
 
             if (!$entry) {
                 $this->queueEntry(new Entry(), $user_entry, $api);
@@ -45,9 +45,7 @@ class EntryRepository extends EntityRepository
                     $output->writeln('<comment>--> Entries queued for insertion.</comment>');
                     ++$count_new_entries;
                 }
-            }
-            else {
-
+            } else {
                 $entry_last_update = new DateTime($user_entry->get('updated-at'));
 
 
@@ -92,12 +90,13 @@ class EntryRepository extends EntityRepository
      */
     public function deleteEntries($user, $from_date, $to_date, OutputInterface $output)
     {
-        // Get the Doctrine Entity Manager and delete all rows for a user between a scope.
+        // Get the Doctrine Entity Manager and delete all rows for a user
+        // between a scope.
         $em = $this->getEntityManager();
         $query = $em->createQuery('DELETE reloaddkHarvesterBundle:entry e WHERE e.user = :user AND e.spentAt >= :from_date AND e.spentAt <= :to_date')
             ->setParameter('user', $user->id)
-            ->setParameter('from_date', $from_date . ' 00:00:00')
-            ->setParameter('to_date', $to_date . ' 23:59:59');
+            ->setParameter('from_date', $from_date)
+            ->setParameter('to_date', $to_date);
         $result = $query->execute();
 
         // Output.
@@ -116,9 +115,15 @@ class EntryRepository extends EntityRepository
     public function queueEntry(Entry $entry, Harvest_DayEntry $harvest_entry, HarvestReports $api)
     {
 
-        $user = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:User')->findOneById($harvest_entry->get('user-id'));
-        $project = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Project')->findOneById($harvest_entry->get('project-id'));
-        $task = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Task')->findOneById($harvest_entry->get('task-id'));
+        $user = $this->getEntityManager()
+            ->getRepository('reloaddkHarvesterBundle:User')
+            ->findOneById($harvest_entry->get('user-id'));
+        $project = $this->getEntityManager()
+            ->getRepository('reloaddkHarvesterBundle:Project')
+            ->findOneById($harvest_entry->get('project-id'));
+        $task = $this->getEntityManager()
+            ->getRepository('reloaddkHarvesterBundle:Task')
+            ->findOneById($harvest_entry->get('task-id'));
 
         // If the task doesn't exist in db, create it.
         if (!$task) {
@@ -225,10 +230,13 @@ class EntryRepository extends EntityRepository
         }
 
         // Get total working days in range for calculations when parsing users.
-        $working_days_in_range = $this->calcWorkingDaysInRange($date_from->getValue()->format('Ymd'), $date_to->getValue()->format('Ymd'));
+        $working_days_in_range = $this->calcWorkingDaysInRange(
+            $date_from->getValue()->format('Ymd'),
+            $date_to->getValue()->format('Ymd')
+        );
 
-        // Format user-data and calculate total sums of data like "hours in range"
-        // and "hours registered".
+        // Format user-data and calculate total sums of data like "hours in
+        // range" and "hours registered".
         foreach ($user_entries as $user) {
             // Format and calculate the user categorised entries.
             $parsed_user = $this->parseUser($user, $working_days_in_range, $working_hours_per_day, $token);
@@ -240,9 +248,11 @@ class EntryRepository extends EntityRepository
         }
 
         // Get the first registered entry.
-        $first_entry_object = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:Entry')->findOneBy(array(), array(
-            'spentAt' => 'ASC',
-        ));
+        $first_entry_object = $this->getEntityManager()
+            ->getRepository('reloaddkHarvesterBundle:Entry')
+            ->findOneBy(array(), array(
+                'spentAt' => 'ASC',
+            ));
 
         // Return the final response.
         return array(
@@ -284,20 +294,17 @@ class EntryRepository extends EntityRepository
 
         // If: "to" is the same month / year as the current month / year.
         // Or: "to" is greater than the current month / year.
-        if (($to->format('Ym') === $today->format('Ym')) OR ($to->format('Ym') > $today->format('Ym'))) {
-
+        if (($to->format('Ym') === $today->format('Ym')) or ($to->format('Ym') > $today->format('Ym'))) {
             // If "to" is greater than or equal to the current date.
             if ($to >= $today) {
                 // Set "to", to the current date.
                 $to = Datetime::createFromFormat('Ymd', date('Ymd', time()));
+            } else {
+                // Else: include the end date to the period.
+                $to->modify('+1 day');
             }
+        } else {
             // Else: include the end date to the period.
-            else {
-              $to->modify('+1 day');
-            }
-        }
-        // Else: include the end date to the period.
-        else {
             $to->modify('+1 day');
         }
 
@@ -331,19 +338,17 @@ class EntryRepository extends EntityRepository
      * @param float $hours_goal
      * @return string
      */
-    public function determineRankingGroup($hours_registered, $hours_goal) {
+    public function determineRankingGroup($hours_registered, $hours_goal)
+    {
         $performance = round($hours_registered/$hours_goal*100);
 
-        if($performance >= 110) {
+        if ($performance >= 110) {
             $group = "A-karmahunter";
-        }
-        else if ($performance < 110 && $performance >= 98) {
+        } elseif ($performance < 110 && $performance >= 98) {
             $group = "B-goalie";
-        }
-        else if ($performance < 98 && $performance >= 80) {
+        } elseif ($performance < 98 && $performance >= 80) {
             $group = "C-karmauser";
-        }
-        else {
+        } else {
             $group = "D-slacker";
         }
 
@@ -370,16 +375,16 @@ class EntryRepository extends EntityRepository
         $user = false;
 
         if ($token) {
-            $user = $this->getEntityManager()->getRepository('reloaddkHarvesterBundle:User')->findOneById($token);
+            $user = $this->getEntityManager()
+                ->getRepository('reloaddkHarvesterBundle:User')
+                ->findOneById($token);
         }
 
         // Loop through all user entries and calculate.
         foreach ($user_entries as $entry) {
-
             $task_name = $entry->getTasks()->getName();
 
             if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
-
                 switch ($task_name) {
                     case 'Helligdag':
                         $holiday += $entry->getHours();
@@ -399,8 +404,7 @@ class EntryRepository extends EntityRepository
                     case 'Barns første sygedag':
                         if ($task_name == 'Sygdom') {
                             $illness['normal'] += $entry->getHours();
-                        }
-                        else {
+                        } else {
                             $illness['child'] += $entry->getHours();
                         }
                         break;
@@ -430,7 +434,8 @@ class EntryRepository extends EntityRepository
         $split_user_id = str_split($user_id, 3);
 
         // Get the actual hours the user is working.
-        $working_hours = $hours - $vacation - $holiday - ($time_off['normal'] + $time_off['paternity_leave']) - $education;
+        $working_hours = $hours - $vacation - $holiday -
+            ($time_off['normal'] + $time_off['paternity_leave']) - $education;
 
         if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
             if ($billable_hours && $working_hours) {
@@ -440,17 +445,22 @@ class EntryRepository extends EntityRepository
                 // Calculate billability percent from total amount of hours.
                 $billability['raw'] = round($billable_hours / $hours * 100, 2);
 
-                // Provide admin-only data like "performance" which calculates the percentage
-                // a user is from an admin provided billable goal.
+                // Provide admin-only data like "performance" which calculates
+                // the percentage a user is from an admin provided billable
+                // goal.
                 if ($user->hasRole('ROLE_ADMIN')) {
-                    // Provide a default value for "billable hours goal per day (75),
-                    // if no specifics have been provided.
-                    // @TODO: Find a way to fetch the value from app/config/parameters.yml.
-                    $goal = $entry->getUser()->getBillabilityGoal() != NULL ? $entry->getUser()->getBillabilityGoal() : 75;
-                    // Calculate the billable hours to reach compared to the goal.
+                    // Provide a default value for "billable hours goal per
+                    // day (75), if no specifics have been provided.
+                    // @TODO: Find a way to fetch the value from
+                    //   app/config/parameters.yml.
+                    $goal = $entry->getUser()->getBillabilityGoal() != null ?
+                        $entry->getUser()->getBillabilityGoal() : 75;
+                    // Calculate the billable hours to reach compared to the
+                    // goal.
                     $billable_hours_to_reach = ($goal / 100) * $working_hours;
-                    // Find the current performance compared to the provided goal.
-                    // Ex: 75 billable_hours / 100 billable_hours_to_reach = 75% performance.
+                    // Find the current performance compared to the provided
+                    // goal. Ex: 75 billable_hours / 100
+                    // billable_hours_to_reach = 75% performance.
                     $calculated_goal = ($billable_hours / $billable_hours_to_reach) * 100;
 
                     $admin = array(
