@@ -45,10 +45,11 @@ class ApiEntryController extends FOSRestController
      */
     public function getEntryAction($entry_id)
     {
-        $entry = $this->container->get('doctrine.orm.entity_manager')->getRepository('reloaddkHarvesterBundle:Entry')->findOneBy(array(
-            'id' => $entry_id,
-            'status' => 1,
-        ));
+        $entry = $this->container->get('doctrine.orm.entity_manager')
+            ->getRepository('reloaddkHarvesterBundle:Entry')->findOneBy(array(
+                'id' => $entry_id,
+                'status' => 1,
+            ));
 
         $view = $this->view($entry, $entry ? 200 : 404);
 
@@ -57,12 +58,35 @@ class ApiEntryController extends FOSRestController
 
     /**
      * @Get("/entries")
-     * @QueryParam(name="group", requirements="user | tasks | project", description="Group entries.")
-     * @QueryParam(name="from", requirements="\d+", description="Date range from (yyyymmdd). (Overwrites month, year if set).")
-     * @QueryParam(name="to", requirements="\d+", description="Date range to (yyyymmdd). (Overwrites month, year if set).")
-     * @QueryParam(name="month", requirements="\w+", description="Month (january, february ect.)")
-     * @QueryParam(name="year", requirements="\d+", description="Year (2013, 2014)")
-     * @QueryParam(name="token", description="An authenticated user token")
+     * @QueryParam(
+     *   name="group",
+     *   requirements="user | tasks | project",
+     *   description="Group entries."
+     * )
+     * @QueryParam(
+     *   name="from",
+     *   requirements="\d+",
+     *   description="Date range from (yyyymmdd). (Overwrites month, year if set)."
+     * )
+     * @QueryParam(
+     *   name="to",
+     *   requirements="\d+",
+     *   description="Date range to (yyyymmdd). (Overwrites month, year if set)."
+     * )
+     * @QueryParam(
+     *   name="month",
+     *   requirements="\w+",
+     *   description="Month (january, february ect.)"
+     * )
+     * @QueryParam(
+     *   name="year",
+     *   requirements="\d+",
+     *   description="Year (2013, 2014)"
+     * )
+     * @QueryParam(
+     *   name="token",
+     *   description="An authenticated user token"
+     * )
      * @ApiDoc(
      *   section="Entry",
      *   description="Returns a collection of Entry",
@@ -106,80 +130,93 @@ class ApiEntryController extends FOSRestController
         }
 
         // Set the default from / to dates.
-        $date_from = new DateTime('first day of this month 00:00:00');
-        $date_to = new DateTime('yesterday 23:59:59');
+        $date_from = new DateTime('first day of this month');
+        $date_to = new DateTime('yesterday');
         $date_today = new DateTime('today');
 
-        // If: it's the first day of the month.
-        // Or: we're within the first 3 days of the month and the current day isn't saturday/sunday/monday.
-        if ((date('j') == 1 || (date('j') < 4 && in_array(date('w'), array(6,7,1))))) {
+        $first_of_month = (date('j') == 1);
+        // If it's the first of the month, or close to it and monday or
+        // weekend, we'll show the previous month.
+        $a_new_beginning = ($first_of_month || (date('j') < 4 && in_array(date('w'), array(0, 1, 6, 7))));
+        // If: it's the first day of the month. Or: we're within the first 3
+        // days of the month and the current day isn't saturday/sunday/monday.
+        if ($a_new_beginning) {
             // Then we're showing the previous month.
-            $date_from = new DateTime('first day of last month 00:00:00');
-            $date_to = new DateTime('last day of last month 23:59:59');
+            $date_from = new DateTime('first day of last month');
+            $date_to = new DateTime('last day of last month');
         }
 
+        $current_month = $month &&
+            (strtolower($month) == strtolower(date('M')) ||
+             strtolower($month) == strtolower(date('F')));
+        $current_year = $year && ($year == date('Y'));
         // If the month and year params is set.
         // And: the request isn't the beginning of the current month,
         //      when we don't have any data yet.
-        if (($month && $year)
-        && !(((date('j') == 1 || (date('j') < 4 && in_array(date('w'), array(6,7,1)))) &&
-            ((strtolower($month) == strtolower(date('M')) || strtolower($month) == strtolower(date('F'))) && $year == date('Y'))))) {
+        if (($month && $year) && !($a_new_beginning &&
+                                   ($current_month && $current_year))) {
             // Set the range to the requested month.
-            $date_from = new DateTime('first day of ' . $month . ' ' . $year . '00:00:00');
-            $date_to = new DateTime('last day of ' . $month . ' ' . $year . '23:59:59');
+            $date_from = new DateTime('first day of ' . $month . ' ' . $year);
+            $date_to = new DateTime('last day of ' . $month . ' ' . $year);
 
             // If the given month / year is equal to the current month / year.
             if ($date_to->format('Ym') === $date_today->format('Ym')) {
-                // Then we set "to", to be the current date instead of the end of the month.
-                $date_to = new DateTime(date('Ymd', time()));
+                // Then we set "to", to be yesterday instead of the end
+                // of the month.
+                $date_to = new DateTime('yesterday');
             }
         }
 
         // If from/to is set, it overwrites month/year
         if ($from == true) {
-            // Set time to 00:00:00 on object.
-            $date_from = DateTime::createFromFormat('Ymd', $from)->setTime(0,0,0);
+            $date_from = DateTime::createFromFormat('Ymd', $from);
         }
 
         // If from/to is set, it overwrites month/year
         if ($to == true) {
-            // Set time to 23:59:59 on object.
-            $date_to = Datetime::createFromFormat('Ymd', $to)->setTime(23,59,59);
+            $date_to = Datetime::createFromFormat('Ymd', $to);
 
             // If "date_to" equals the current day.
             if ($date_to->format('Ymd') === $date_today->format('Ymd')) {
-                // Subtract 1 day.
-                $date_to->modify('-1 day');
+                // Use yesterday instead.
+                $date_to = new DateTime('yesterday');
             }
         }
 
         // Start query from entry table.
-        $repository = $this->container->get('doctrine.orm.entity_manager')->getRepository('reloaddkHarvesterBundle:Entry');
+        $repository = $this->container->get('doctrine.orm.entity_manager')
+            ->getRepository('reloaddkHarvesterBundle:Entry');
 
         $query = $repository->createQueryBuilder('e');
 
         // Limit the query to a date span.
         $query
-            ->where('e.spentAt >= :date_from AND e.spentAt < :date_to AND e.status = :status')
-            ->setParameter('date_from', $date_from, \Doctrine\DBAL\Types\Type::DATETIME)
-            ->setParameter('date_to', $date_to, \Doctrine\DBAL\Types\Type::DATETIME)
+            ->where('e.spentAt >= :date_from AND e.spentAt <= :date_to AND e.status = :status')
+            ->setParameter('date_from', $date_from, \Doctrine\DBAL\Types\Type::DATE)
+            ->setParameter('date_to', $date_to, \Doctrine\DBAL\Types\Type::DATE)
             ->setParameter('status', 1);
 
-        // If group GET param is set, generate a Entry repository function name.
+        // If group GET param is set, generate a Entry repository function
+        // name.
         if ($group) {
             $repository_function = 'groupBy' . ucfirst($group);
         }
 
         // Call the custom 'group' repository function.
-        $result = $repository->$repository_function($query, $this->container->getParameter('default_hours_per_day'), $token_response);
+        $result = $repository->$repository_function($query,
+                                                    $this->container->getParameter('default_hours_per_day'),
+                                                    $token_response);
 
-        $callback = $request->get('callback'); // Check to see if callback parameter is in URL
+        // Check to see if callback parameter is in URL
+        $callback = $request->get('callback');
 
-        $response = new JsonResponse(); // Construct a new JSON response
+        // Construct a new JSON response
+        $response = new JsonResponse();
         $response->setStatusCode($result ? 200 : 404);
 
         if (isset($callback)) {
-            $response->setCallback($callback); // Set callback function to variable passed in callback
+            // Set callback function to variable passed in callback
+            $response->setCallback($callback);
         }
 
         $response->setData($result);
