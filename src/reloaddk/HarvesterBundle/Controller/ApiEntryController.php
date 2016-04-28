@@ -45,10 +45,11 @@ class ApiEntryController extends FOSRestController
      */
     public function getEntryAction($entry_id)
     {
-        $entry = $this->container->get('doctrine.orm.entity_manager')->getRepository('reloaddkHarvesterBundle:Entry')->findOneBy(array(
-            'id' => $entry_id,
-            'status' => 1,
-        ));
+        $entry = $this->container->get('doctrine.orm.entity_manager')
+            ->getRepository('reloaddkHarvesterBundle:Entry')->findOneBy(array(
+                'id' => $entry_id,
+                'status' => 1,
+            ));
 
         $view = $this->view($entry, $entry ? 200 : 404);
 
@@ -57,12 +58,35 @@ class ApiEntryController extends FOSRestController
 
     /**
      * @Get("/entries")
-     * @QueryParam(name="group", requirements="user | tasks | project", description="Group entries.")
-     * @QueryParam(name="from", requirements="\d+", description="Date range from (yyyymmdd). (Overwrites month, year if set).")
-     * @QueryParam(name="to", requirements="\d+", description="Date range to (yyyymmdd). (Overwrites month, year if set).")
-     * @QueryParam(name="month", requirements="\w+", description="Month (january, february ect.)")
-     * @QueryParam(name="year", requirements="\d+", description="Year (2013, 2014)")
-     * @QueryParam(name="token", description="An authenticated user token")
+     * @QueryParam(
+     *   name="group",
+     *   requirements="user | tasks | project",
+     *   description="Group entries."
+     * )
+     * @QueryParam(
+     *   name="from",
+     *   requirements="\d+",
+     *   description="Date range from (yyyymmdd). (Overwrites month, year if set)."
+     * )
+     * @QueryParam(
+     *   name="to",
+     *   requirements="\d+",
+     *   description="Date range to (yyyymmdd). (Overwrites month, year if set)."
+     * )
+     * @QueryParam(
+     *   name="month",
+     *   requirements="\w+",
+     *   description="Month (january, february ect.)"
+     * )
+     * @QueryParam(
+     *   name="year",
+     *   requirements="\d+",
+     *   description="Year (2013, 2014)"
+     * )
+     * @QueryParam(
+     *   name="token",
+     *   description="An authenticated user token"
+     * )
      * @ApiDoc(
      *   section="Entry",
      *   description="Returns a collection of Entry",
@@ -114,8 +138,8 @@ class ApiEntryController extends FOSRestController
         // If it's the first of the month, or close to it and monday or
         // weekend, we'll show the previous month.
         $a_new_beginning = ($first_of_month || (date('j') < 4 && in_array(date('w'), array(0, 1, 6, 7))));
-        // If: it's the first day of the month.
-        // Or: we're within the first 3 days of the month and the current day isn't saturday/sunday/monday.
+        // If: it's the first day of the month. Or: we're within the first 3
+        // days of the month and the current day isn't saturday/sunday/monday.
         if ($a_new_beginning) {
             // Then we're showing the previous month.
             $date_from = new DateTime('first day of last month');
@@ -160,7 +184,8 @@ class ApiEntryController extends FOSRestController
         }
 
         // Start query from entry table.
-        $repository = $this->container->get('doctrine.orm.entity_manager')->getRepository('reloaddkHarvesterBundle:Entry');
+        $repository = $this->container->get('doctrine.orm.entity_manager')
+            ->getRepository('reloaddkHarvesterBundle:Entry');
 
         $query = $repository->createQueryBuilder('e');
 
@@ -171,21 +196,27 @@ class ApiEntryController extends FOSRestController
             ->setParameter('date_to', $date_to, \Doctrine\DBAL\Types\Type::DATE)
             ->setParameter('status', 1);
 
-        // If group GET param is set, generate a Entry repository function name.
+        // If group GET param is set, generate a Entry repository function
+        // name.
         if ($group) {
             $repository_function = 'groupBy' . ucfirst($group);
         }
 
         // Call the custom 'group' repository function.
-        $result = $repository->$repository_function($query, $this->container->getParameter('default_hours_per_day'), $token_response);
+        $result = $repository->$repository_function($query,
+                                                    $this->container->getParameter('default_hours_per_day'),
+                                                    $token_response);
 
-        $callback = $request->get('callback'); // Check to see if callback parameter is in URL
+        // Check to see if callback parameter is in URL
+        $callback = $request->get('callback');
 
-        $response = new JsonResponse(); // Construct a new JSON response
+        // Construct a new JSON response
+        $response = new JsonResponse();
         $response->setStatusCode($result ? 200 : 404);
 
         if (isset($callback)) {
-            $response->setCallback($callback); // Set callback function to variable passed in callback
+            // Set callback function to variable passed in callback
+            $response->setCallback($callback);
         }
 
         $response->setData($result);
