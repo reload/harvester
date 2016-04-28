@@ -7,3 +7,7 @@ PATH=/usr/bin:/bin:/usr/local/bin
 
 # Set status to 0 of old entries that no longer exist in Harvest (been deleted).
 0 * * * * www-data /harvester/app/console 2>&1 harvester:fetch:cleanup --days=62 | logger -t harvester
+
+# This will delete all records that's two months old and refill entries again.
+# This is done to get rid of entries that might have been deleted.
+* 5 * * * /harvester/app/console harvester:refresh --days=62 --preserve-roles
