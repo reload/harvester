@@ -110,29 +110,35 @@ class ApiEntryController extends FOSRestController
         $date_to = new DateTime('yesterday');
         $date_today = new DateTime('today');
 
+        $first_of_month = (date('j') == 1);
+        // If it's the first of the month, or close to it and monday or
+        // weekend, we'll show the previous month.
+        $a_new_beginning = ($first_of_month || (date('j') < 4 && in_array(date('w'), array(0, 1, 6, 7))));
         // If: it's the first day of the month.
         // Or: we're within the first 3 days of the month and the current day isn't saturday/sunday/monday.
-        if ((date('j') == 1 || (date('j') < 4 && in_array(date('w'), array(6,7,1))))) {
+        if ($a_new_beginning) {
             // Then we're showing the previous month.
             $date_from = new DateTime('first day of last month');
             $date_to = new DateTime('last day of last month');
         }
 
+        $current_month = $month &&
+            (strtolower($month) == strtolower(date('M')) ||
+             strtolower($month) == strtolower(date('F')));
+        $current_year = $year && ($year == date('Y'));
         // If the month and year params is set.
         // And: the request isn't the beginning of the current month,
         //      when we don't have any data yet.
-        if (($month && $year)
-        && !(((date('j') == 1 ||
-               (date('j') < 4 && in_array(date('w'), array(6,7,1)))) &&
-            ((strtolower($month) == strtolower(date('M')) ||
-              strtolower($month) == strtolower(date('F'))) && $year == date('Y'))))) {
+        if (($month && $year) && !($a_new_beginning &&
+                                   ($current_month && $current_year))) {
             // Set the range to the requested month.
             $date_from = new DateTime('first day of ' . $month . ' ' . $year);
             $date_to = new DateTime('last day of ' . $month . ' ' . $year);
 
             // If the given month / year is equal to the current month / year.
             if ($date_to->format('Ym') === $date_today->format('Ym')) {
-                // Then we set "to", to be the current date instead of the end of the month.
+                // Then we set "to", to be yesterday instead of the end
+                // of the month.
                 $date_to = new DateTime('yesterday');
             }
         }
@@ -148,8 +154,8 @@ class ApiEntryController extends FOSRestController
 
             // If "date_to" equals the current day.
             if ($date_to->format('Ymd') === $date_today->format('Ymd')) {
-                // Subtract 1 day.
-                $date_to->modify('-1 day');
+                // Use yesterday instead.
+                $date_to = new DateTime('yesterday');
             }
         }
 
