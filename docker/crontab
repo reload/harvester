@@ -10,4 +10,4 @@ PATH=/usr/bin:/bin:/usr/local/bin
 
 # This will delete all records that's two months old and refill entries again.
 # This is done to get rid of entries that might have been deleted.
-* 5 * * * /harvester/app/console harvester:refresh --days=62 --preserve-roles | logger -t harvester
+* 5 * * * www-data /harvester/app/console 2>&1 harvester:refresh --days=62 --preserve-roles | logger -t harvester
