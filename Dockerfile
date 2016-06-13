@@ -56,4 +56,7 @@ COPY docker/harvester /etc/my_init.d/
 # Make runit start apache.
 COPY docker/apache2.service /etc/service/apache2/run
 
+# And error forwarding.
+COPY docker/apache-error-forwarder.service /etc/service/apache-error-forwarder/run
+
 WORKDIR /harvester
