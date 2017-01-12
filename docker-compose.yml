@@ -1,0 +1,12 @@
+version: "2"
+services:
+  composer:
+    build: docker/composer
+    volumes:
+      - '.:/app'
+      - './docker/composer-cache:/composer/cache'
+  php:
+    image: php:7.0-cli
+    volumes:
+      - '.:/usr/src'
+    working_dir: '/usr/src'
