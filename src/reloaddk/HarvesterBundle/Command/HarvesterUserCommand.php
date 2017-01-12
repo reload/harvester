@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
 
 class HarvesterUserCommand extends ContainerAwareCommand
 {
@@ -51,8 +52,8 @@ class HarvesterUserCommand extends ContainerAwareCommand
             ->addOption(
                 'password',
                 null,
-                InputOption::VALUE_REQUIRED,
-                'Type password to set password for user'
+                InputOption::VALUE_NONE,
+                'Use this if password for user should be changed.'
             );
     }
 
@@ -165,7 +166,14 @@ class HarvesterUserCommand extends ContainerAwareCommand
                 }
             }
 
-            if ($password = $input->getOption('password')) {
+            if ($input->getOption('password')) {
+                $question = new Question('Password: ', '');
+                $question->setHidden(true);
+                $question->setHiddenFallback(false);
+
+                $helper = $this->getHelper('question');
+                $password = $helper->ask($input, $output, $question);
+
                 $user->setPassword($password);
                 $output->writeln('<info>Updated password for ' . $user->getFirstName() . ' ' . $user->getLastName() . '.</info>');
             }
