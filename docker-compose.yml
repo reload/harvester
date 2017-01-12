@@ -8,5 +8,5 @@ services:
   harvester:
     build: .
     volumes:
-      - './harvester.sqlite:/data/harvester.sqlite'
+      - './data/harvester.sqlite:/data/harvester.sqlite'
       - './src:/harvester/src'
