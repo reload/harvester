@@ -47,6 +47,12 @@ class HarvesterUserCommand extends ContainerAwareCommand
                 null,
                 InputOption::VALUE_NONE,
                 'Show user data'
+            )
+            ->addOption(
+                'password',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Type password to set password for user'
             );
     }
 
@@ -157,6 +163,11 @@ class HarvesterUserCommand extends ContainerAwareCommand
                 } else if (strtolower($input->getOption('active')) === 'yes') {
                     $user->setIsActive(1);
                 }
+            }
+
+            if ($password = $input->getOption('password')) {
+                $user->setPassword($password);
+                $output->writeln('<info>Updated password for ' . $user->getFirstName() . ' ' . $user->getLastName() . '.</info>');
             }
 
             $em = $doctrine->getManager();
