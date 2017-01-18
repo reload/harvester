@@ -11,3 +11,7 @@ services:
       - './data/harvester.sqlite:/data/harvester.sqlite'
       - './src:/harvester/src'
       - './vendor:/harvester/vendor'
+networks:
+  default:
+    external:
+      name: timelord-harvester
