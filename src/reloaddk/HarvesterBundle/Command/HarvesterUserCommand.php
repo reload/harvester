@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\Question;
 
 class HarvesterUserCommand extends ContainerAwareCommand
 {
@@ -47,6 +48,12 @@ class HarvesterUserCommand extends ContainerAwareCommand
                 null,
                 InputOption::VALUE_NONE,
                 'Show user data'
+            )
+            ->addOption(
+                'password',
+                null,
+                InputOption::VALUE_NONE,
+                'Use this if password for user should be changed.'
             );
     }
 
@@ -157,6 +164,18 @@ class HarvesterUserCommand extends ContainerAwareCommand
                 } else if (strtolower($input->getOption('active')) === 'yes') {
                     $user->setIsActive(1);
                 }
+            }
+
+            if ($input->getOption('password')) {
+                $question = new Question('Password: ', '');
+                $question->setHidden(true);
+                $question->setHiddenFallback(false);
+
+                $helper = $this->getHelper('question');
+                $password = $helper->ask($input, $output, $question);
+
+                $user->setPassword($password);
+                $output->writeln('<info>Updated password for ' . $user->getFirstName() . ' ' . $user->getLastName() . '.</info>');
             }
 
             $em = $doctrine->getManager();

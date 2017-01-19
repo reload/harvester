@@ -1,0 +1,2 @@
+deb http://ftp.uio.no/debian/ testing main contrib
+deb-src http://ftp.uio.no/debian/ testing main contrib
