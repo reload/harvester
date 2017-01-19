@@ -8,7 +8,7 @@
     },
     "require": {
         "php": ">=5.3.3",
-        "symfony/symfony": "2.7",
+        "symfony/symfony": "~2.7",
         "doctrine/orm": "~2.2,>=2.2.3",
         "doctrine/doctrine-bundle": "~1.2",
         "twig/extensions": "~1.0",
@@ -22,8 +22,7 @@
         "mattvick/harvest-app-bundle": "dev-master",
         "friendsofsymfony/rest-bundle": "@dev",
         "jms/serializer-bundle": "@dev",
-        "nelmio/api-doc-bundle": "@dev",
-        "twig/twig": "1.18"
+        "nelmio/api-doc-bundle": "@dev"
     },
     "repositories": [
         {
