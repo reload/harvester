@@ -8,11 +8,11 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get -q install -y ssmtp \
     sqlite3 \
     git \
-    apache2 php5 php5-sqlite \
+    apache2 php5 php5-mysql \
     php5-intl php5-curl && \
     # And clean up
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-    
+
 COPY ./ /harvester
 
 # REST service app requires mod_rewrite.
@@ -23,18 +23,18 @@ RUN a2enmod rewrite && \
 
     # Run composer to install app.
 
-    # Link in 
+    # Link in
     rm -rf /var/www/html && \
     ln -s /harvester/web /var/www/html && \
-    
+
     export HOME=/root && \
     cd /harvester && \
     composer install --prefer-source && \
 
     # Fix up permissions for webapp.
     chmod a+w -R /harvester/app/cache /harvester/app/logs
-    
-    
+
+
 # Setup defaults for variables.
 ENV HARVESTER_SECRET ThisTokenIsNotSoSecretChangeIt
 ENV HARVESTER_HOURS_PER_DAY 7.5

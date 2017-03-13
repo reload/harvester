@@ -4,40 +4,32 @@
 cd /harvester
 cat > /harvester/app/config/parameters.yml <<EOF
 parameters:
-  database_path:     /data/harvester.sqlite
+  database_host: $MYSQL_HOST
+  database_port: 3306
+  database_name: $MYSQL_DATABASE
+  database_user: $MYSQL_USER
+  database_password: $MYSQL_PASSWORD
 
   mailer_transport:  smtp
   mailer_host:       127.0.0.1
   mailer_user:       ~
   mailer_password:   ~
-    
+
   locale:            en
   secret:            $HARVESTER_SECRET
-    
+
   default_hours_per_day:  $HARVESTER_HOURS_PER_DAY
   default_billability_goal: $HARVESTER_BILLABILITY_GOAL
-    
+
 mattvick_harvest_app:
   user:      '$HARVESTER_HARVEST_USER'
   password:  '$HARVESTER_HARVEST_PASSWORD'
   account:   '$HARVESTER_HARVEST_ACCOUNT'
 EOF
 
-if [ ! -e /data/harvester.sqlite ]
-then
-    echo "Creating database."
-    mkdir -p /data
-    app/console doctrine:database:create
-    app/console doctrine:schema:create
+# Fix up permissions for webapp.
+chmod a+w -R /harvester/app/cache /harvester/app/logs
 
-    if [ -e /data/harvester.sql ]
-    then
-        sqlite3 /data/harvester.sqlite < /data/harvester.sql
-    fi
 
-    echo "Initial import."
-    app/console harvester:fetch
 
-    # Fix up permissions for webapp.
-    chmod a+w -R /harvester/app/cache /harvester/app/logs
-fi
+
