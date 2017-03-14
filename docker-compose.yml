@@ -21,11 +21,16 @@ services:
         HARVESTER_HARVEST_PASSWORD: ${HARVESTER_HARVEST_PASSWORD}
         HARVESTER_HARVEST_ACCOUNT: ${HARVESTER_HARVEST_ACCOUNT}
   elk:
-    build: ./docker/elk
+    image: reload/elk
     ports:
       - "5601:5601"
       - "9200:9200"
       - "5044:5044"
+    environment:
+      JDBC_HARVEST_HOST: ${JDBC_HARVEST_HOST}
+      JDBC_HARVEST_DATABASE: ${JDBC_HARVEST_DATABASE}
+      JDBC_HARVEST_USER: ${JDBC_HARVEST_USER}
+      JDBC_HARVEST_USER_PASSWORD: {JDBC_HARVEST_USER_PASSWORD}
   db:
     image: mysql
     ports:
