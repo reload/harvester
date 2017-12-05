@@ -7,7 +7,14 @@ services:
       - './docker/composer-cache:/composer/cache'
   harvester:
     build: .
+    environment:
+      VIRTUAL_HOST: 'harvest.docker'
+      HARVESTER_HARVEST_USER: 'harvest@reload.dk'
+      HARVESTER_HARVEST_ACCOUNT: 'reload'
+      HARVESTER_HARVEST_PASSWORD: 'ijctsily'
+    ports:
+      - 80
     volumes:
-      - './data/harvester.sqlite:/data/harvester.sqlite'
+      #- './data/harvester.sqlite:/data/harvester.sqlite'
       - './src:/harvester/src'
       - './vendor:/harvester/vendor'
