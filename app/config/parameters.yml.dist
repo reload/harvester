@@ -1,0 +1,19 @@
+parameters:
+    database_path:     /var/local/harvester.sqlite
+
+    mailer_transport:  smtp
+    mailer_host:       127.0.0.1
+    mailer_user:       ~
+    mailer_password:   ~
+
+    locale:            en
+    secret:            ThisTokenIsNotSoSecretChangeIt
+
+    default_hours_per_day: 7.5
+    default_billability_goal: 75
+    default_support_hours_per_day: 1.2
+
+mattvick_harvest_app:
+    user:      'harvest_account_email@email.com'
+    password:  'secretpassword'
+    account:   'harvestapp_account_name'

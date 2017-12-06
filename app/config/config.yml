@@ -36,6 +36,7 @@ twig:
     globals:
         default_hours_per_day: %default_hours_per_day%
         default_billability_goal: %default_billability_goal%
+        default_support_hours_per_day: %default_support_hours_per_day%
 
 # Assetic Configuration
 assetic:
