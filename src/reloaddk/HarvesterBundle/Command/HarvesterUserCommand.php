@@ -118,6 +118,7 @@ class HarvesterUserCommand extends ContainerAwareCommand
                 array('Full name', $user->getFirstName() . ' ' . $user->getLastName()),
                 array('Email', $user->getEmail()),
                 array('Working hours', $user->getWorkingHours() ? $user->getWorkingHours() : $this->getContainer()->getParameter('default_hours_per_day')),
+                array('Support hours', $user->getSupportHours() ? $user->getSupportHours() : $this->getContainer()->getParameter('default_support_hours_per_day')),
                 array('Admin', $user->getIsAdmin() ? 'Yes' : 'No'),
                 array('Active', $user->getIsActive() ? 'Yes' : 'No'),
                 array('Created at', $user->getCreatedAt()->format('Y-m-d h:i:s')),

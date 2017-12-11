@@ -368,6 +368,7 @@ class EntryRepository extends EntityRepository
     public function parseUser(Array $user_entries, $workingdays_in_range, $user_working_hours = null, $token = null)
     {
         $hours = $billable_hours = $education = $holiday = $vacation = 0;
+        $support_hours = 0;
         $illness['normal'] = $illness['child'] = 0;
         $time_off['normal'] = $time_off['paternity_leave'] = 0;
         $billability['raw'] = $billability['calculated'] = 0;
@@ -428,6 +429,14 @@ class EntryRepository extends EntityRepository
 
         // Get the normed hours for this month.
         $hours_goal = $workingdays_in_range * $user_working_hours;
+
+        // Get default support hours per day for the user.
+        if ($entry->getUser()->getSupportHours() > 0) {
+            $user_support_hours = $entry->getUser()->getSupportHours();
+        }
+
+        // Get the normed support hours for this month.
+        $support_hours_goal = $workingdays_in_range * $user_support_hours;
 
         // Split user id, used for creating path to user avatar from Harvest!
         $user_id = str_pad($entry->getUser()->getId(), 9, 0, STR_PAD_LEFT);
@@ -502,6 +511,8 @@ class EntryRepository extends EntityRepository
             'last_name' => $entry->getUser()->getLastName(),
             'full_name' => $entry->getUser()->getFirstName() . ' ' . $entry->getUser()->getLastName(),
             'email' => $entry->getUser()->getEmail(),
+            'support_hours_goal' => $support_hours_goal,
+            'support_hours_registered' => $support_hours,
             'hours_goal' => $hours_goal,
             'hours_registered' => $hours,
             'extra' => $extra,

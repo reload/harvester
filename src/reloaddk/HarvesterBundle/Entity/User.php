@@ -74,6 +74,14 @@ class User implements AdvancedUserInterface
     /**
      * @var float
      *
+     * @ORM\Column(name="support_hours", type="float", nullable=true, options={"default": 0})
+     * @Expose
+     */
+    private $supportHours;
+    
+    /**
+     * @var float
+     *
      * @ORM\Column(name="working_hours", type="float", nullable=true, options={"default": 0})
      * @Expose
      */
@@ -358,6 +366,29 @@ class User implements AdvancedUserInterface
     public function getWorkingHours()
     {
         return $this->workingHours;
+    }
+
+    /**
+     * Set supportHours.
+     *
+     * @param $supportHours
+     * @return $this
+     */
+    public function setSupportHours($supportHours)
+    {
+        $this->supportHours = $supportHours;
+
+        return $this;
+    }
+
+    /**
+     * Get supportHours.
+     *
+     * @return float
+     */
+    public function getSupportHours()
+    {
+        return $this->supportHours;
     }
 
     /**

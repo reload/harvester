@@ -12,6 +12,7 @@ services:
       HARVESTER_HARVEST_USER: 'harvest@reload.dk'
       HARVESTER_HARVEST_ACCOUNT: 'reload'
       HARVESTER_HARVEST_PASSWORD: 'ijctsily'
+      HARVESTER_SUPPORT_HOURS_PER_DAY: 1.2
     ports:
       - 80
     volumes:
