@@ -210,7 +210,7 @@ class Project
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -233,7 +233,7 @@ class Project
     /**
      * Get name
      *
-     * @return string 
+     * @return string
      */
     public function getName()
     {
@@ -256,7 +256,7 @@ class Project
     /**
      * Get code
      *
-     * @return string 
+     * @return string
      */
     public function getCode()
     {
@@ -279,7 +279,7 @@ class Project
     /**
      * Get active
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getActive()
     {
@@ -302,7 +302,7 @@ class Project
     /**
      * Get notes
      *
-     * @return string 
+     * @return string
      */
     public function getNotes()
     {
@@ -325,7 +325,7 @@ class Project
     /**
      * Get billable
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getBillable()
     {
@@ -348,7 +348,7 @@ class Project
     /**
      * Get billBy
      *
-     * @return string 
+     * @return string
      */
     public function getBillBy()
     {
@@ -358,12 +358,12 @@ class Project
     /**
      * Set costBudget
      *
-     * @param float $costBudget
+     * @param string $costBudget
      * @return Project
      */
     public function setCostBudget($costBudget)
     {
-        $this->costBudget = $costBudget;
+        $this->costBudget = (float) $costBudget;
 
         return $this;
     }
@@ -371,7 +371,7 @@ class Project
     /**
      * Get costBudget
      *
-     * @return float 
+     * @return float
      */
     public function getCostBudget()
     {
@@ -394,7 +394,7 @@ class Project
     /**
      * Get costBudgetIncludeExpenses
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getCostBudgetIncludeExpenses()
     {
@@ -404,12 +404,12 @@ class Project
     /**
      * Set hourlyRate
      *
-     * @param float $hourlyRate
+     * @param string $hourlyRate
      * @return Project
      */
     public function setHourlyRate($hourlyRate)
     {
-        $this->hourlyRate = $hourlyRate;
+        $this->hourlyRate = (float) $hourlyRate;
 
         return $this;
     }
@@ -417,7 +417,7 @@ class Project
     /**
      * Get hourlyRate
      *
-     * @return float 
+     * @return float
      */
     public function getHourlyRate()
     {
@@ -427,12 +427,12 @@ class Project
     /**
      * Set budget
      *
-     * @param float $budget
+     * @param string $budget
      * @return Project
      */
     public function setBudget($budget)
     {
-        $this->budget = $budget;
+        $this->budget = (float) $budget;
 
         return $this;
     }
@@ -440,7 +440,7 @@ class Project
     /**
      * Get budget
      *
-     * @return float 
+     * @return float
      */
     public function getBudget()
     {
@@ -463,7 +463,7 @@ class Project
     /**
      * Get budgetBy
      *
-     * @return string 
+     * @return string
      */
     public function getBudgetBy()
     {
@@ -486,7 +486,7 @@ class Project
     /**
      * Get notifyWhenOverBudget
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getNotifyWhenOverBudget()
     {
@@ -509,7 +509,7 @@ class Project
     /**
      * Get overBudgetNotificationPercentage
      *
-     * @return float 
+     * @return float
      */
     public function getOverBudgetNotificationPercentage()
     {
@@ -532,7 +532,7 @@ class Project
     /**
      * Get overBudgetNotifiedAt
      *
-     * @return \DateTime 
+     * @return \DateTime
      */
     public function getOverBudgetNotifiedAt()
     {
@@ -555,7 +555,7 @@ class Project
     /**
      * Get showBudgetToAll
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getShowBudgetToAll()
     {
@@ -578,7 +578,7 @@ class Project
     /**
      * Get createdAt
      *
-     * @return \DateTime 
+     * @return \DateTime
      */
     public function getCreatedAt()
     {
@@ -601,7 +601,7 @@ class Project
     /**
      * Get updatedAt
      *
-     * @return \DateTime 
+     * @return \DateTime
      */
     public function getUpdatedAt()
     {
@@ -611,12 +611,12 @@ class Project
     /**
      * Set estimate
      *
-     * @param float $estimate
+     * @param string $estimate
      * @return Project
      */
     public function setEstimate($estimate)
     {
-        $this->estimate = $estimate;
+        $this->estimate = (float) $estimate;
 
         return $this;
     }
@@ -624,7 +624,7 @@ class Project
     /**
      * Get estimate
      *
-     * @return float 
+     * @return float
      */
     public function getEstimate()
     {
@@ -647,7 +647,7 @@ class Project
     /**
      * Get estimateBy
      *
-     * @return string 
+     * @return string
      */
     public function getEstimateBy()
     {
@@ -670,7 +670,7 @@ class Project
     /**
      * Get hintEarliestRecordAt
      *
-     * @return \DateTime 
+     * @return \DateTime
      */
     public function getHintEarliestRecordAt()
     {
@@ -693,7 +693,7 @@ class Project
     /**
      * Get hintLatestRecordAt
      *
-     * @return \DateTime 
+     * @return \DateTime
      */
     public function getHintLatestRecordAt()
     {
@@ -726,7 +726,7 @@ class Project
     /**
      * Get entries
      *
-     * @return \Doctrine\Common\Collections\Collection 
+     * @return \Doctrine\Common\Collections\Collection
      */
     public function getEntries()
     {
@@ -749,7 +749,7 @@ class Project
     /**
      * Get clientId
      *
-     * @return integer 
+     * @return integer
      */
     public function getClientId()
     {

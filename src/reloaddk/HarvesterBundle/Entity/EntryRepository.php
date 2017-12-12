@@ -136,6 +136,7 @@ class EntryRepository extends EntityRepository
         $entry->setId($harvest_entry->get('id'));
         $entry->setUser($user);
         $entry->setProject($project);
+        $entry->setProjectCode($project->getCode());
         $entry->setTasks($task);
         $entry->setNotes($harvest_entry->get('notes'));
         $entry->setHours($harvest_entry->get('hours'));
@@ -419,7 +420,15 @@ class EntryRepository extends EntityRepository
                 }
             }
 
+            $project_code = strtolower($entry->getProject()->getCode());
+
+            // Support projects all have (or will be changed into having) "-sup-" in the project code
+            if (strpos($project_code, '-sup-') !== false) {
+                $support_hours += $entry->getHours();
+            }
+            
             $hours += $entry->getHours();
+            
         }
 
         // Get default working hours per day for the user.
@@ -433,6 +442,8 @@ class EntryRepository extends EntityRepository
         // Get default support hours per day for the user.
         if ($entry->getUser()->getSupportHours() > 0) {
             $user_support_hours = $entry->getUser()->getSupportHours();
+        } else {
+            $user_support_hours = 1.2;
         }
 
         // Get the normed support hours for this month.

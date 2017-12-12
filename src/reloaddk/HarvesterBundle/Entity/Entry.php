@@ -33,6 +33,14 @@ class Entry
     private $notes;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="projectcode", type="text")
+     * @Expose
+     */
+    private $projectcode;
+
+    /**
      * @var float
      *
      * @ORM\Column(name="hours", type="float")
@@ -339,7 +347,7 @@ class Entry
     {
         return $this->user;
     }
-
+    
     /**
      * Set project
      *
@@ -361,6 +369,29 @@ class Entry
     public function getProject()
     {
         return $this->project;
+    }
+
+    /**
+     * Set project code
+     *
+     * @param string $projectcode
+     * @return Entry
+     */
+    public function setProjectCode($projectcode)
+    {
+        $this->projectcode = $projectcode;
+
+        return $this;
+    }
+
+    /**
+     * Get projectcode
+     *
+     * @return string 
+     */
+    public function getProjectCode()
+    {
+        return $this->projectcode;
     }
 
     /**
