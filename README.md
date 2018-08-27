@@ -9,20 +9,11 @@ faster than the actual HarvestApp API since everything is stored locally.
 
 When it comes to installing Harvester you will need to clone the repository from GitHub.
 
-    git clone https://github.com/reload/harvester.git
+    `git clone https://github.com/reload/harvester.git`
 
-And install Harvester with composer.
+    `cd harvester/`
 
-If you don't have Composer yet, download it following the instructions on
-http://getcomposer.org/ or just run the following command:
-
-    curl -s http://getcomposer.org/installer | php
-
-Then, install the application:
-
-    cd harvester/
-
-    php composer.phar install
+    `docker-compose run  composer install`
 
 Composer will install Harvester and all its dependencies. And you will need to configure database and the system.
 

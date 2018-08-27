@@ -1,0 +1,8 @@
+version: "2"
+
+syncs:
+  harvester-sync-root:
+    notify_terminal: true
+    src: './'
+    sync_excludes: ['vendor/*']
+    watch_excludes: ['.*/.git', '.gitignore', '.idea']

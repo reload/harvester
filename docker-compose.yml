@@ -5,8 +5,13 @@ services:
     volumes:
       - '.:/app'
       - './docker/composer-cache:/composer/cache'
+
   harvester:
     build: .
+    environment:
+      VIRTUAL_HOST: harvester.docker
+    ports:
+      - '80'
     volumes:
       - './data/harvester.sqlite:/data/harvester.sqlite'
       - './src:/harvester/src'
