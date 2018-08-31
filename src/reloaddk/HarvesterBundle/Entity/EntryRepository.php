@@ -9,6 +9,7 @@ use HarvestReports;
 use DateTime;
 use DatePeriod;
 use DateInterval;
+use reloaddk\HarvesterBundle\Entity\Project;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -413,7 +414,7 @@ class EntryRepository extends EntityRepository
                         break;
                 }
 
-                if ($entry->getTasks()->getBillableByDefault() && $entry->getProject()->getBillable()) {
+                if ($entry->getTasks()->getBillableByDefault() && $entry->getProject() instanceof Project && $entry->getProject()->getBillable()) {
                     $billable_hours += $entry->getHours();
                 }
             }
