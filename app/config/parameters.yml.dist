@@ -1,5 +1,5 @@
 parameters:
-    database_path:     /var/local/harvester.sqlite
+    database_path:     /data/harvester.sqlite
 
     mailer_transport:  smtp
     mailer_host:       127.0.0.1
