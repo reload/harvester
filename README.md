@@ -1,3 +1,5 @@
+![Docker Badge](https://img.shields.io/docker/automated/reload/harvester.svg) ![Docker Badge](https://img.shields.io/docker/build/reload/harvester.svg)
+
 Harvester
 =========
 
