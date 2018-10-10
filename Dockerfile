@@ -8,11 +8,12 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get -q install -y ssmtp \
     sqlite3 \
     git \
+    unzip \
     apache2 php5 php5-sqlite \
     php5-intl php5-curl && \
     # And clean up
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-    
+
 COPY ./ /harvester
 
 # REST service app requires mod_rewrite.
@@ -20,21 +21,16 @@ RUN a2enmod rewrite && \
     # Composer for building Harvester.
     curl -sS https://getcomposer.org/installer | php && \
     mv composer.phar /usr/local/bin/composer && \
-
-    # Run composer to install app.
-
-    # Link in 
+    # Link in
     rm -rf /var/www/html && \
     ln -s /harvester/web /var/www/html && \
-    
+    # Run composer to install app.
     export HOME=/root && \
     cd /harvester && \
-    composer install --prefer-source && \
-
+    composer install --optimize-autoloader --classmap-authoritative && \
     # Fix up permissions for webapp.
     chmod a+w -R /harvester/app/cache /harvester/app/logs
-    
-    
+
 # Setup defaults for variables.
 ENV HARVESTER_SECRET ThisTokenIsNotSoSecretChangeIt
 ENV HARVESTER_HOURS_PER_DAY 7.5
@@ -46,6 +42,11 @@ ENV SYMFONY_ENV prod
 
 # Fix AllowOverride All for /var/www/html
 COPY docker/apache2.conf /etc/apache2/apache2.conf
+
+# Override with custom PHP settings
+COPY docker/opcache-config.ini /etc/php5/mods-available/
+COPY docker/php-config.ini /etc/php5/mods-available/
+RUN php5enmod opcache-config php-config
 
 # Add our crontab.
 COPY docker/crontab /etc/cron.d/harvester
