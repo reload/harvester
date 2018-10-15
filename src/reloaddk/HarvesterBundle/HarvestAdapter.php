@@ -25,6 +25,12 @@ class HarvestAdapter extends HarvestApp {
     $this->extended_api = $extended_api;
 
     // Set parameters
+    var_dump([
+      'user' => $user,
+      'pw' => $password,
+      'ssl' => $ssl,
+      'mode' => $mode
+    ]);
     $this->extended_api->setUser($user);
     $this->extended_api->setPassword($password);
     $this->extended_api->setAccount($account);
