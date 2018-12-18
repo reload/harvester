@@ -24,17 +24,17 @@ Then, install the application:
 
     cd harvester/
 
-    php composer.phar install
+    docker-compose run composer install
 
 Composer will install Harvester and all its dependencies. And you will need to configure database and the system.
 
 Install the database
 
-    app/console doctrine:database:create
+    docker-compose exec harvester app/console doctrine:database:create
 
 Import the database schema
 
-    app/console doctrine:schema:create
+    docker-compose exec harvester app/console doctrine:schema:create
 
 Setup your apache/nginx virtualhost, and a few urls is now available
 
@@ -56,24 +56,24 @@ This could be executed from crontab
 
 To see the command
 
-    app/console help harvester:fetch
+    docker-compose exec harvester app/console help harvester:fetch
 
 To run the command without parameters, will fetch everything from Harvest (could tak several minutes)
 
-    app/console harvester:fetch
+    docker-compose exec harvester app/console harvester:fetch
 
 To fetch updated data from this month
 
-    app/console harvester:fetch `date "+%Y%m01"`
+    docker-compose exec harvester app/console harvester:fetch `date "+%Y%m01"`
 
 To fetch that has been updated since yesterday
 
-    app/console harvester:fetch --updated-yesterday
+    docker-compose exec harvester app/console harvester:fetch --updated-yesterday
 
 To delete entries and repopulate within a given timespan
 
-    app/console harvester:refresh `date "+%Y%m01"`
+    docker-compose exec harvester app/console harvester:refresh `date "+%Y%m01"`
 
 To delete entries and repopulate within a static amount of days
 
-    app/console harvester:refresh --days=30
+    docker-compose exec harvester app/console harvester:refresh --days=30
