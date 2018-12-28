@@ -4,4 +4,5 @@ services:
     environment:
       HARVESTER_HARVEST_USER: harvest_account_email@email.com
       HARVESTER_HARVEST_PASSWORD: secretpassword
+      # only use the actual name, e.g. "reload". *Not* the full url (reload.harvestapp.com)
       HARVESTER_HARVEST_ACCOUNT: harvestapp_account_name
