@@ -479,6 +479,10 @@ class EntryRepository extends EntityRepository
                 $illness = false;
             }
 
+            // Calculate normalized hours_pr_day
+            //'hours_pr_day_normalized' => round($billable_hours / $workingdays_in_range - ((hours_registered - working_hours) / user_working_hours), 2),
+            $hours_pr_day_normalized = ($billable_hours / ($workingdays_in_range - (($hours-$working_hours)/$user_working_hours)));
+
             // Extra information for admins and logged in users.
             $extra = array(
                 'billable_hours' => $billable_hours,
@@ -486,6 +490,7 @@ class EntryRepository extends EntityRepository
                     'of_total_hours' => $billability['raw'],
                     'of_working_hours' => $billability['calculated'],
                     'hours_pr_day' => round($billable_hours / $workingdays_in_range, 2),
+                    'hours_pr_day_normalized' => round($hours_pr_day_normalized, 2),
                 ),
                 'holiday' => $holiday,
                 'time_off' => $time_off,
