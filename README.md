@@ -6,8 +6,8 @@ Harvester
 Welcome to Harvester, a service which fetch data from HarvestApp and have a simple API to get data out. This is so much
 faster than the actual HarvestApp API since everything is stored locally.
 
-1) Installing
--------------
+
+## Installing
 
 When it comes to installing Harvester you will need to clone the repository from GitHub.
 
@@ -42,8 +42,8 @@ Setup your apache/nginx virtualhost, and a few urls is now available
 
 [http://yourho.st/admin]()
 
-2) Configuration
-----------------
+
+## Configuration
 
 For the HarvestApp API fetcher to work you need to configure the API info via environment variables in the container:
 
@@ -51,7 +51,8 @@ For the HarvestApp API fetcher to work you need to configure the API info via en
 
 Then edit the variables in docker-compose.override.yml, which correspond to those in `parameters.yml`. You will need to restart the container if it is already running.
 
-1) Usage
+
+## Usage
 
 There is a commmand line command available for fetching data from the HarvestApp API.
 This could be executed from crontab
