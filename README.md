@@ -45,11 +45,13 @@ Setup your apache/nginx virtualhost, and a few urls is now available
 2) Configuration
 ----------------
 
-For the HarvestApp API fetcher to work you need to configure the API info in app/config/
+For the HarvestApp API fetcher to work you need to configure the API info via environment variables in the container:
 
-    vim app/config/parameters.yml
+    cp docker-compose.override.yml-example docker-compose.override.yml
 
-3) Usage
+Then edit the variables in docker-compose.override.yml, which correspond to those in `parameters.yml`. You will need to restart the container if it is already running.
+
+1) Usage
 
 There is a commmand line command available for fetching data from the HarvestApp API.
 This could be executed from crontab
