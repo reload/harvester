@@ -8,7 +8,5 @@
 /build/
 /vendor/
 /bin/
-/composer.phar
-/docker/composer-cache
 docker-compose.override.yml
 /data
