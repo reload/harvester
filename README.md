@@ -13,13 +13,6 @@ When it comes to installing Harvester you will need to clone the repository from
 
     git clone https://github.com/reload/harvester.git
 
-And install Harvester with composer.
-
-If you don't have Composer yet, download it following the instructions on
-http://getcomposer.org/ or just run the following command:
-
-    curl -s http://getcomposer.org/installer | php
-
 Then, install the application:
 
     cd harvester/
@@ -27,6 +20,10 @@ Then, install the application:
     docker-compose run composer install
 
 Composer will install Harvester and all its dependencies. And you will need to configure database and the system.
+
+Bring up the Harvester container:
+
+    docker-compose up -d harvester
 
 Install the database
 
