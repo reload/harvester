@@ -1,4 +1,4 @@
-FROM phusion/baseimage:0.9.17
+FROM phusion/baseimage:0.11
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
