@@ -1,75 +1,142 @@
+![https://i.imgur.com/jdTgyyI.png](https://i.imgur.com/jdTgyyI.png)
+
+# Harvester
 ![Docker Badge](https://img.shields.io/docker/automated/reload/harvester.svg) ![Docker Badge](https://img.shields.io/docker/build/reload/harvester.svg)
 
-Harvester
-=========
-
-Welcome to Harvester, a service which fetch data from HarvestApp and have a simple API to get data out. This is so much
-faster than the actual HarvestApp API since everything is stored locally.
+Welcome to Harvester, a service which fetch data from HarvestApp and have a simple API to get data out.
 
 
-## Installing
+## Get started
 
-When it comes to installing Harvester you will need to clone the repository from GitHub.
+#### 1. Create the config:
 
-    git clone https://github.com/reload/harvester.git
+```
+make create-config
+```
 
-And install Harvester with composer:
+#### 2. Fill in envs in `docker-compose.override.yml`:
 
-    cd harvester/
+```
+HARVESTER_HARVEST_USER: harvest_account_email@email.com
+HARVESTER_HARVEST_PASSWORD: secretpassword
+# only use the actual name, e.g. "reload". *Not* the full url (reload.harvestapp.com)
+HARVESTER_HARVEST_ACCOUNT: harvestapp_account_name
+```
 
-    docker-compose run composer install
+The credentials can be found in LastPass. Search for __"Harvester API"__.
 
-Composer will install Harvester and all its dependencies. And you will need to configure database and the system.
+#### 3. Get everything up and running. This takes ~30 minutes:
 
-Install the database
+```
+make up
+```
 
-    docker-compose exec harvester app/console doctrine:database:create
+When your teminal looks something likes this:
 
-Import the database schema
+```
+server_1  | *** Running /etc/my_init.d/00_regen_ssh_host_keys.sh...
+server_1  | *** Running /etc/my_init.d/harvester...
+server_1  | *** Running /etc/rc.local...
+server_1  | *** Booting runit daemon...
+server_1  | *** Runit started as PID 10
+server_1  | tail: unrecognized file system type 0x794c7630 for ‘/var/log/apache2/error.log’. please report this to bug-coreutils@gnu.org. reverting to polling
+server_1  | tail: unrecognized file system type 0x794c7630 for ‘/var/log/syslog’. please report this to bug-coreutils@gnu.org. reverting to polling
+server_1  | AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 172.28.0.2. Set the 'ServerName' directive globally to suppress this message
+server_1  | AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 172.28.0.2. Set the 'ServerName' directive globally to suppress this message
+server_1  | [Fri Apr 17 08:35:03.303829 2020] [mpm_prefork:notice] [pid 21] AH00163: Apache/2.4.7 (Ubuntu) PHP/5.5.9-1ubuntu4.29 configured -- resuming normal operations
+server_1  | [Fri Apr 17 08:35:03.303888 2020] [core:notice] [pid 21] AH00094: Command line: 'apache2 -D FOREGROUND'
+server_1  | Apr 17 08:35:03 d37b70b08786 syslog-ng[18]: syslog-ng starting up; version='3.5.3'
+```
 
-    docker-compose exec harvester app/console doctrine:schema:create
+__The wait is over!__
 
-Setup your apache/nginx virtualhost, and a few urls is now available
+#### 4. Create an admin user:
 
-[http://yourho.st/api/doc]()
+```
+make create-admin
+```
 
-[http://yourho.st/admin]()
+Fill in your password of choice and now you are ready to login with the user __harvest@reload.dk__ and your new password at [http://harvester.docker/login](http://harvester.docker/login).
+
+#### 5. Harvester is now accessible at:
+
+- Login: [http://harvester.docker/login](http://harvester.docker/login)
+- Admin: [http://harvester.docker/admin](http://harvester.docker/admin)
+- Docs: [http://harvester.docker/api/doc](http://harvester.docker/api/doc)
 
 
-## Configuration
+## CLI
 
-For the HarvestApp API fetcher to work you need to configure the API info via environment variables in the container:
+For fetching data from the HarvestApp API and mannaging users.
 
-    cp docker-compose.override.yml-example docker-compose.override.yml
+### User mannagement
 
-Then edit the variables in docker-compose.override.yml, which correspond to those in `parameters.yml`. You will need to restart the container if it is already running.
+Print the available configuration for the user command.
+
+```
+docker-compose exec server app/console help harvester:user
+```
 
 
-## Usage
+### Data fetching
 
-There is a commmand line command available for fetching data from the HarvestApp API.
-This could be executed from crontab
+<details>
+  <summary>
+    Print the available configuration for the fetch command.
+  </summary>
 
-To see the command
+```
+docker-compose exec server app/console help harvester:fetch
+```
+</details>
 
-    docker-compose exec harvester app/console help harvester:fetch
+<details>
+  <summary>
+    Run the fetch command without parameters. Will fetch everything from HarvestApp (~30 minutes).
+  </summary>
 
-To run the command without parameters, will fetch everything from Harvest (could tak several minutes)
+```
+  docker-compose exec server app/console harvester:fetch
+```
+</details>
 
-    docker-compose exec harvester app/console harvester:fetch
+<details>
+  <summary>
+    Data from this month
+  </summary>
 
-To fetch updated data from this month
+```
+docker-compose exec server app/console harvester:fetch `date "+%Y%m01"`
+```
+</details>
 
-    docker-compose exec harvester app/console harvester:fetch `date "+%Y%m01"`
 
-To fetch that has been updated since yesterday
+<details>
+  <summary>
+    Since yesterday
+  </summary>
 
-    docker-compose exec harvester app/console harvester:fetch --updated-yesterday
+```
+docker-compose exec server app/console harvester:fetch --updated-yesterday
+```
+</details>
 
-To delete entries and repopulate within a given timespan
+<details>
+  <summary>
+    Delete entries and repopulate within a given timespan
+  </summary>
 
-    docker-compose exec harvester app/console harvester:refresh `date "+%Y%m01"`
+```
+docker-compose exec server app/console harvester:refresh `date "+%Y%m01"`
+```
+</details>
 
-To delete entries and repopulate within a static amount of days
+<details>
+  <summary>
+    Delete entries and repopulate within a static amount of days
+  </summary>
 
-    docker-compose exec harvester app/console harvester:refresh --days=30
+```
+docker-compose exec server app/console harvester:refresh --days=30
+```
+</details>
