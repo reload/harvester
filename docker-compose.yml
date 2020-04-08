@@ -1,10 +1,5 @@
 version: "2"
 services:
-  composer:
-    build: docker/composer
-    volumes:
-      - '.:/app'
-      - './docker/composer-cache:/composer/cache'
   harvester:
     build: .
     environment:
