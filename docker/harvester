@@ -36,8 +36,8 @@ then
     fi
 
     echo "Initial import."
-    app/console harvester:fetch
+    app/console harvester:fetch --updated-yesterday
 
-    # Fix up permissions for webapp.
-    chmod a+w -R /harvester/app/cache /harvester/app/logs
+    # Fix up permissions for webapp and database.
+    chmod a+w -R /harvester/app/cache /harvester/app/logs /data
 fi
