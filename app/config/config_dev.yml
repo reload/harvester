@@ -35,3 +35,6 @@ assetic:
 swiftmailer:
     disable_delivery:  true
 
+# Twig Configuration
+twig:
+    cache: false

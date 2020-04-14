@@ -4,6 +4,8 @@ services:
     build: .
     environment:
       VIRTUAL_HOST: harvester.docker
+      SYMFONY_ENV: dev
+      SYMFONY_DEBUG: 1
     ports:
       - '80'
     volumes:
