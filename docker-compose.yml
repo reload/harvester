@@ -1,6 +1,6 @@
 version: "2"
 services:
-  harvester:
+  server:
     build: .
     environment:
       VIRTUAL_HOST: harvester.docker
