@@ -6,6 +6,7 @@ services:
       VIRTUAL_HOST: harvester.docker
       SYMFONY_ENV: dev
       SYMFONY_DEBUG: 1
+      SYMFONY__KERNEL__CACHE_DIR: /tmp/cache
     ports:
       - '80'
     volumes:
