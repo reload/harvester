@@ -385,7 +385,7 @@ class EntryRepository extends EntityRepository
         foreach ($user_entries as $entry) {
             $task_name = $entry->getTasks()->getName();
 
-            if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
+            if ($token == $entry->getUser()->getId() || (is_object($user) && $user->getIsAdmin())) {
                 switch ($task_name) {
                     case 'Helligdag':
                         $holiday += $entry->getHours();
@@ -438,7 +438,7 @@ class EntryRepository extends EntityRepository
         $working_hours = $hours - $vacation - $holiday -
             ($time_off['normal'] + $time_off['paternity_leave']) - $education;
 
-        if ($token == $entry->getUser()->getId() || (is_object($user) && $user->hasRole('ROLE_ADMIN'))) {
+        if ($token == $entry->getUser()->getId() || (is_object($user) && $user->getIsAdmin())) {
             if ($billable_hours && $working_hours) {
                 // Calculate billability percent from the actual working hours.
                 $billability['calculated'] = round($billable_hours / $working_hours * 100, 2);
@@ -449,7 +449,7 @@ class EntryRepository extends EntityRepository
                 // Provide admin-only data like "performance" which calculates
                 // the percentage a user is from an admin provided billable
                 // goal.
-                if ($user->hasRole('ROLE_ADMIN')) {
+                if ($user->getIsAdmin()) {
                     // Provide a default value for "billable hours goal per
                     // day (75), if no specifics have been provided.
                     // @TODO: Find a way to fetch the value from
