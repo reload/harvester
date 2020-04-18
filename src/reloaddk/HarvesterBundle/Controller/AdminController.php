@@ -134,7 +134,7 @@ class AdminController
             if ($this->mailer->sendMail('harvest@reload.dk', $user->getEmail(), $user->getFirstname(), $user_password, 'Hello Email')) {
                 $this->session->getFlashBag()->add(
                     'success',
-                    'New password for <strong>' . $user->getFirstname() . ' ' . $user->getLastname() . '</strong> is generated.'
+                    'New password <strong>' . $user_password . '</strong> for <strong>' . $user->getFirstname() . ' ' . $user->getLastname() . '</strong> is generated.'
                 );
             }
         }
