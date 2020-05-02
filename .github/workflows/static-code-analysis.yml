@@ -3,7 +3,7 @@ name: Static code analysis
 on: [push]
 
 jobs:
-  static-code-analysis:
+  phpmd:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -11,10 +11,18 @@ jobs:
         uses: docker://jakzal/phpqa:php7.1-alpine
         with:
           args: phpmd src text codesize,unusedcode,naming
+  phpcs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
       - name: php_code_sniffer
         uses: docker://jakzal/phpqa:php7.1-alpine
         with:
           args: phpcs --standard=PSR2 src
+  phploc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
       - name: phploc
         uses: docker://jakzal/phpqa:php7.1-alpine
         with:
