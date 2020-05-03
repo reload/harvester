@@ -7,6 +7,7 @@ services:
       SYMFONY_ENV: dev
       SYMFONY_DEBUG: 1
       SYMFONY__KERNEL__CACHE_DIR: /tmp/cache
+      COMPOSER_MEMORY_LIMIT: -1
     ports:
       - '80'
     volumes:
