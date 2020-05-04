@@ -7,51 +7,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 5.6
       - name: Install Reviewdog
         run: |
           curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s
       - name: Install PHPMD
         run: |
-          composer global require phpmd/phpmd
-          echo "::add-path::$(composer -q global config home)/vendor/bin"
+          wget -c https://phpmd.org/static/latest/phpmd.phar
+          php phpmd.phar --version
       - name: PHPMD
-        run: phpmd src text codesize,unusedcode,naming | ./bin/reviewdog -efm="%f:%l %m" -name="PHPMD" -reporter=github-check
+        run: php phpmd.phar src text codesize,unusedcode,naming | ./bin/reviewdog -efm="%f:%l %m" -name="PHPMD" -reporter=github-check
         env:
           REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
   phpcs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 5.6
       - name: Install Reviewdog
         run: |
           curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s
       - name: Install PHPCS
         run: |
-          composer global require squizlabs/php_codesniffer
-          echo "::add-path::$(composer -q global config home)/vendor/bin"
+          wget https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar
+          php phpcs.phar --version
       - name: PHPCS
-        run: phpcs --standard=PSR2 --report=checkstyle src | ./bin/reviewdog -f=checkstyle -name="PHPCS" -reporter=github-check
+        run: php phpcs.phar --standard=PSR2 --report=checkstyle src | ./bin/reviewdog -f=checkstyle -name="PHPCS" -reporter=github-check
         env:
           REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
   phploc:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 5.6
       - name: Install PHPLOC
         run: |
-          composer global require phploc/phploc
-          echo "::add-path::$(composer -q global config home)/vendor/bin"
+          wget https://phar.phpunit.de/phploc.phar
+          php phploc.phar --version
       - name: PHPLOC
-        run: phploc src
+        run: php phploc.phar src
