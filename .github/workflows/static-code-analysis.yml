@@ -43,3 +43,30 @@ jobs:
           php phploc.phar --version
       - name: PHPLOC
         run: php phploc.phar src
+  phpcpd:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Install PHPCPD
+        run: |
+          wget https://phar.phpunit.de/phpcpd.phar
+          php phpcpd.phar --version
+      - name: PHPCPD
+        run: php phpcpd.phar --fuzzy src
+  phpdoccheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Install Reviewdog
+        run: |
+          curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s
+      - name: Install phpdoccheck
+        run: |
+          composer global require block8/php-docblock-checker |
+          echo "::add-path::$(composer -q global config home)/vendor/bin"
+      - name: phpdoccheck
+        run: phpdoccheck -d src --skip-classes | ./bin/reviewdog  -efm="ERROR    %f:%l - %m" -name="phpdoccheck" -reporter=github-check
+        env:
+          REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
+
+
