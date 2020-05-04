@@ -1,6 +1,6 @@
 version: "2"
 services:
-  harvester:
+  server:
     environment:
       HARVESTER_HARVEST_USER: harvest_account_email@email.com
       HARVESTER_HARVEST_PASSWORD: secretpassword

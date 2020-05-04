@@ -1,14 +1,13 @@
 version: "2"
 services:
-  composer:
-    build: docker/composer
-    volumes:
-      - '.:/app'
-      - './docker/composer-cache:/composer/cache'
-  harvester:
+  server:
     build: .
     environment:
       VIRTUAL_HOST: harvester.docker
+      SYMFONY_ENV: dev
+      SYMFONY_DEBUG: 1
+      SYMFONY__KERNEL__CACHE_DIR: /tmp/cache
+      COMPOSER_MEMORY_LIMIT: -1
     ports:
       - '80'
     volumes:
