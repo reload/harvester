@@ -1,6 +1,6 @@
 name: Static code analysis
 
-on: [push]
+on: pull_request
 
 jobs:
   phpmd:
@@ -17,7 +17,7 @@ jobs:
       - name: PHPMD
         run: php phpmd.phar src text codesize,unusedcode,naming | ./bin/reviewdog -efm="%f:%l %m" -name="PHPMD" -reporter=github-check
         env:
-          REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   phpcs:
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +32,7 @@ jobs:
       - name: PHPCS
         run: php phpcs.phar --standard=PSR2 --report=checkstyle src | ./bin/reviewdog -f=checkstyle -name="PHPCS" -reporter=github-check
         env:
-          REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   phploc:
     runs-on: ubuntu-latest
     steps:
@@ -67,6 +67,6 @@ jobs:
       - name: phpdoccheck
         run: phpdoccheck -d src --skip-classes | ./bin/reviewdog  -efm="ERROR    %f:%l - %m" -name="phpdoccheck" -reporter=github-check
         env:
-          REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
