@@ -1,6 +1,6 @@
 name: Static code analysis
 
-on: [push]
+on: pull_request
 
 jobs:
   phpmd:
@@ -15,9 +15,9 @@ jobs:
           wget -c https://phpmd.org/static/latest/phpmd.phar
           php phpmd.phar --version
       - name: PHPMD
-        run: php phpmd.phar src text codesize,unusedcode,naming | ./bin/reviewdog -efm="%f:%l %m" -name="PHPMD" -reporter=github-check
+        run: php phpmd.phar src text codesize,unusedcode,naming | ./bin/reviewdog -efm="%f:%l %m" -name="PHPMD" -reporter=github-pr-review
         env:
-          REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   phpcs:
     runs-on: ubuntu-latest
     steps:
@@ -30,9 +30,9 @@ jobs:
           wget https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar
           php phpcs.phar --version
       - name: PHPCS
-        run: php phpcs.phar --standard=PSR2 --report=checkstyle src | ./bin/reviewdog -f=checkstyle -name="PHPCS" -reporter=github-check
+        run: php phpcs.phar --standard=PSR2 --report=checkstyle src | ./bin/reviewdog -f=checkstyle -name="PHPCS" -reporter=github-pr-review
         env:
-          REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   phploc:
     runs-on: ubuntu-latest
     steps:
@@ -65,8 +65,8 @@ jobs:
           composer global require block8/php-docblock-checker |
           echo "::add-path::$(composer -q global config home)/vendor/bin"
       - name: phpdoccheck
-        run: phpdoccheck -d src --skip-classes | ./bin/reviewdog  -efm="ERROR    %f:%l - %m" -name="phpdoccheck" -reporter=github-check
+        run: phpdoccheck -d src --skip-classes | ./bin/reviewdog  -efm="ERROR    %f:%l - %m" -name="phpdoccheck" -reporter=github-pr-review
         env:
-          REVIEWDOG_TOKEN: ${{ secrets.REVIEWDOG_TOKEN }}
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
