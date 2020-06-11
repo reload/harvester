@@ -37,8 +37,7 @@ class AdminMailer
      * @param string $subject
      * @return int
      */
-    public function sendMail($from, $to, $name, $password, $subject)
-    {
+    public function sendMail($from, $to, $name, $password, $subject) {
         $message = Swift_Message::newInstance()
             ->setSubject($subject)
             ->setFrom($from)
