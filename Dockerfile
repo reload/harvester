@@ -19,8 +19,12 @@ COPY ./ /harvester
 # REST service app requires mod_rewrite.
 RUN a2enmod rewrite && \
     # Composer for building Harvester.
-    curl -sS https://getcomposer.org/installer | php && \
-    mv composer.phar /usr/local/bin/composer && \
+    curl -o /tmp/composer-installer https://getcomposer.org/installer && \
+    curl -o /tmp/composer-installer.sig https://composer.github.io/installer.sig &&  \
+    php -r "if (hash('SHA384', file_get_contents('/tmp/composer-installer')) !== trim(file_get_contents('/tmp/composer-installer.sig'))) { unlink('/tmp/composer-installer'); echo 'Invalid installer' . PHP_EOL; exit(1); }" && \
+    php /tmp/composer-installer --version=1.6.5 --filename=composer --install-dir=/usr/local/bin && \
+    php -r "unlink('/tmp/composer-installer');" && \
+    php -r "unlink('/tmp/composer-installer.sig');" && \
     # Link in
     rm -rf /var/www/html && \
     ln -s /harvester/web /var/www/html && \
