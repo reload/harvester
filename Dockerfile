@@ -1,3 +1,5 @@
+# Our dependencies ore too old for Composer 2
+FROM composer:1 AS composer
 FROM phusion/baseimage:0.9.17
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
@@ -16,11 +18,11 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 
 COPY ./ /harvester
 
+# Composer for building Harvester.
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+
 # REST service app requires mod_rewrite.
 RUN a2enmod rewrite && \
-    # Composer for building Harvester.
-    curl -sS https://getcomposer.org/installer | php && \
-    mv composer.phar /usr/local/bin/composer && \
     # Link in
     rm -rf /var/www/html && \
     ln -s /harvester/web /var/www/html && \
