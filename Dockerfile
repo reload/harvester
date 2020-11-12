@@ -1,5 +1,5 @@
 # Our dependencies ore too old for Composer 2
-FROM composer:1 AS composer
+FROM composer:2 AS composer
 FROM phusion/baseimage:0.9.17
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
