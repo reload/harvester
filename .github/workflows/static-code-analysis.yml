@@ -62,8 +62,8 @@ jobs:
           curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh| sh -s
       - name: Install phpdoccheck
         run: |
-          composer global require block8/php-docblock-checker |
-          echo "::add-path::$(composer -q global config home)/vendor/bin"
+          composer global require block8/php-docblock-checker
+          composer -q global config bin-dir --absolute >> "${GITHUB_PATH}"
       - name: phpdoccheck
         run: phpdoccheck -d src --skip-classes | ./bin/reviewdog  -efm="ERROR    %f:%l - %m" -name="phpdoccheck" -reporter=github-check
         env:
