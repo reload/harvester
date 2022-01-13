@@ -1,4 +1,4 @@
-version: 2
+qversion: 2
 updates:
 - package-ecosystem: docker
   directory: "/"
@@ -7,6 +7,8 @@ updates:
     time: '04:00'
     timezone: Europe/Copenhagen
   open-pull-requests-limit: 10
+  reviewers:
+  - "reload/developers"
 - package-ecosystem: composer
   directory: "/"
   schedule:
@@ -14,5 +16,5 @@ updates:
     time: '04:00'
     timezone: Europe/Copenhagen
   open-pull-requests-limit: 10
-  assignees:
-  - luckow
+  reviewers:
+  - "reload/developers"
