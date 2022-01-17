@@ -52,6 +52,7 @@ RUN php5enmod opcache-config php-config
 
 # Add our crontab.
 COPY docker/crontab /etc/cron.d/harvester
+RUN chmod go= /etc/cron.d/harvester
 
 # Script for setting up harvester.
 COPY docker/harvester /etc/my_init.d/
