@@ -1,10 +1,9 @@
 ![https://i.imgur.com/jdTgyyI.png](https://i.imgur.com/jdTgyyI.png)
 
 # Harvester
-![Docker Badge](https://img.shields.io/docker/automated/reload/harvester.svg) ![Docker Badge](https://img.shields.io/docker/build/reload/harvester.svg)
 
-Welcome to Harvester, a service which fetch data from HarvestApp and have a simple API to get data out.
-
+Welcome to Harvester, a service which fetch data from HarvestApp and
+have a simple API to get data out.
 
 ## Get started
 
