@@ -368,7 +368,7 @@ class EntryRepository extends EntityRepository
      */
     public function parseUser(Array $user_entries, $workingdays_in_range, $user_working_hours = null, $token = null)
     {
-        $hours = $billable_hours = $education = $holiday = $vacation = 0;
+        $hours = $billable_hours = $education = $holiday = $vacation = $off_hours = 0;
         $illness['normal'] = $illness['child'] = 0;
         $time_off['normal'] = $time_off['paternity_leave'] = 0;
         $billability['raw'] = $billability['calculated'] = 0;
@@ -381,11 +381,17 @@ class EntryRepository extends EntityRepository
                 ->findOneById($token);
         }
 
+        $entry_user = reset($user_entries)->getUser();
+
+        // Show extra if the logged in user owns the entry, or is admin.
+        $show_extra = $token == $entry_user->getId() || (is_object($user) && $user->getIsAdmin());
+
         // Loop through all user entries and calculate.
         foreach ($user_entries as $entry) {
             $task_name = $entry->getTasks()->getName();
+            $is_off_hours = $task_name == 'Off Hours - Driftsupport (ReOps)';
 
-            if ($token == $entry->getUser()->getId() || (is_object($user) && $user->getIsAdmin())) {
+            if ($show_extra) {
                 switch ($task_name) {
                     case 'Helligdag':
                         $holiday += $entry->getHours();
@@ -415,30 +421,37 @@ class EntryRepository extends EntityRepository
                 }
 
                 if ($entry->getTasks()->getBillableByDefault() && $entry->getProject() instanceof Project && $entry->getProject()->getBillable()) {
-                    $billable_hours += $entry->getHours();
+                    if (!$is_off_hours) {
+                        $billable_hours += $entry->getHours();
+                    }
                 }
             }
 
-            $hours += $entry->getHours();
+            // Keep off hours out of the total.
+            if ($is_off_hours) {
+                $off_hours += $entry->getHours();
+            } else {
+                $hours += $entry->getHours();
+            }
         }
 
         // Get default working hours per day for the user.
-        if ($entry->getUser()->getWorkingHours() > 0) {
-            $user_working_hours = $entry->getUser()->getWorkingHours();
+        if ($entry_user->getWorkingHours() > 0) {
+            $user_working_hours = $entry_user->getWorkingHours();
         }
 
         // Get the normed hours for this month.
         $hours_goal = $workingdays_in_range * $user_working_hours;
 
         // Split user id, used for creating path to user avatar from Harvest!
-        $user_id = str_pad($entry->getUser()->getId(), 9, 0, STR_PAD_LEFT);
+        $user_id = str_pad($entry_user->getId(), 9, 0, STR_PAD_LEFT);
         $split_user_id = str_split($user_id, 3);
 
         // Get the actual hours the user is working.
         $working_hours = $hours - $vacation - $holiday -
             ($time_off['normal'] + $time_off['paternity_leave']) - $education;
 
-        if ($token == $entry->getUser()->getId() || (is_object($user) && $user->getIsAdmin())) {
+        if ($show_extra) {
             if ($billable_hours && $working_hours) {
                 // Calculate billability percent from the actual working hours.
                 $billability['calculated'] = round($billable_hours / $working_hours * 100, 2);
@@ -454,8 +467,8 @@ class EntryRepository extends EntityRepository
                     // day (75), if no specifics have been provided.
                     // @TODO: Find a way to fetch the value from
                     //   app/config/parameters.yml.
-                    $goal = $entry->getUser()->getBillabilityGoal() != null ?
-                        $entry->getUser()->getBillabilityGoal() : 75;
+                    $goal = $entry_user->getBillabilityGoal() != null ?
+                        $entry_user->getBillabilityGoal() : 75;
                     // Calculate the billable hours to reach compared to the
                     // goal.
                     $billable_hours_to_reach = ($goal / 100) * $working_hours;
@@ -499,15 +512,16 @@ class EntryRepository extends EntityRepository
                 'illness' => $illness,
                 'working_hours' => $working_hours,
                 'working_days' => $workingdays_in_range,
+                'off_hours' => $off_hours ? $off_hours : false,
             );
         }
 
         return array(
-            'id' => $entry->getUser()->getId(),
-            'first_name' => $entry->getUser()->getFirstName(),
-            'last_name' => $entry->getUser()->getLastName(),
-            'full_name' => $entry->getUser()->getFirstName() . ' ' . $entry->getUser()->getLastName(),
-            'email' => $entry->getUser()->getEmail(),
+            'id' => $entry_user->getId(),
+            'first_name' => $entry_user->getFirstName(),
+            'last_name' => $entry_user->getLastName(),
+            'full_name' => $entry_user->getFirstName() . ' ' . $entry_user->getLastName(),
+            'email' => $entry_user->getEmail(),
             'hours_goal' => $hours_goal,
             'hours_registered' => $hours,
             'extra' => $extra,
