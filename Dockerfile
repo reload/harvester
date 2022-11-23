@@ -1,6 +1,6 @@
 # Our dependencies ore too old for Composer 2
 FROM composer:1 AS composer
-FROM phusion/baseimage:0.9.17
+FROM phusion/baseimage:18.04-1.0.0
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
