@@ -1,18 +1,26 @@
 # Our dependencies ore too old for Composer 2
 FROM composer:1 AS composer
-FROM phusion/baseimage:0.9.17
+FROM phusion/baseimage:18.04-1.0.0
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c", "-x"]
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt-get update && \
     # Need git for composer, sqlite to import sql, cron for background
     # tasks and ssmtp to avoid having cron pull in a full blown MTA
     # like Exim, and apache, php and extensions
-    apt-get -q install -y ssmtp \
-    sqlite3 \
-    git \
-    unzip \
-    apache2 php5 php5-sqlite \
-    php5-intl php5-curl && \
+    apt-get -q install -y --no-install-recommends \
+               apache2 \
+               git \
+               php \
+               php-curl \
+               php-intl \
+               php-sqlite3 \
+               php-xml \
+               sqlite3 \
+               ssmtp \
+               unzip \
+               && \
     # And clean up
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -46,9 +54,9 @@ ENV SYMFONY_ENV prod
 COPY docker/apache2.conf /etc/apache2/apache2.conf
 
 # Override with custom PHP settings
-COPY docker/opcache-config.ini /etc/php5/mods-available/
-COPY docker/php-config.ini /etc/php5/mods-available/
-RUN php5enmod opcache-config php-config
+COPY docker/opcache-config.ini /etc/php/7.2/mods-available/
+COPY docker/php-config.ini /etc/php/7.2/mods-available/
+RUN phpenmod opcache-config php-config
 
 # Add our crontab.
 COPY docker/crontab /etc/cron.d/harvester
@@ -64,3 +72,4 @@ COPY docker/apache2.service /etc/service/apache2/run
 COPY docker/apache-error-forwarder.service /etc/service/apache-error-forwarder/run
 
 WORKDIR /harvester
+
