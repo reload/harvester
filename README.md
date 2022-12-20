@@ -114,6 +114,6 @@ Delete entries and repopulate within a static amount of days
 docker-compose exec server app/console harvester:refresh --days=30
 ```
 ## Hosting
-Harvester is currently hosted with Kubernetes at Google Cloud Platform in the project: `reload-internal-alpha`
-It is deployed using [helm](https://helm.sh/docs/topics/charts/)
+Harvester is currently hosted with Kubernetes at Google Cloud Platform in the project: `reload-internal-alpha` <br/>
+It is deployed using [helm](https://helm.sh/docs/topics/charts/) <br/>
 For more info, please see our [helm-chart](./helm-chart)
