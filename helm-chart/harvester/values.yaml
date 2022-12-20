@@ -1,0 +1,12 @@
+# The image tag is added in the github workflow based on which tag is pushed to main
+image: ghcr.io/reload/harvester
+
+ingress:
+  host: harvester.reload.dk
+  # enable prod and disable staging to issue REAL certs
+  #issuer: letsencrypt-staging
+  issuer: letsencrypt-prod
+
+harvester:
+  pv:
+    size: 100Mi
