@@ -1,0 +1,77 @@
+name: "Build, push to GHCR and deploy image to GKE cluster"
+
+on:
+  push:
+    tags: [ '*' ]
+
+env:
+  RELEASE_TAG: ${{ github.ref_name }}
+
+jobs:
+  build:
+    name: Docker build and push
+    if: >
+      ${{ !github.event.deleted }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: '0'
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@master
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1.12.0
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build and push Docker images
+      uses: docker/build-push-action@v2.7.0
+      with:
+        builder: ${{ steps.buildx.outputs.name }}
+        tags: |
+          ghcr.io/reload/harvester:${{ env.RELEASE_TAG }}
+        push: true
+
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      GCP_PROJECT: reload-internal-alpha
+      GKE_CLUSTER_ZONE: europe-west1-b
+    steps:
+    # actions/checkout MUST come before auth
+    - uses: 'actions/checkout@v3'
+
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v0'
+      with:
+        credentials_json: '${{ secrets.GCP_CREDS }}'
+    # Install gcloud, `setup-gcloud` automatically picks up authentication from `auth`.
+    - name: 'Set up Cloud SDK'
+      uses: 'google-github-actions/setup-gcloud@v0'
+
+    # Now you can run gcloud commands authenticated as the impersonated service account.
+    - name: install config gcloud auth
+      run: |
+        gcloud components install gke-gcloud-auth-plugin
+        gcloud container clusters get-credentials ${{ env.GCP_PROJECT }}-cluster --region ${{ env.GKE_CLUSTER_ZONE }} --project ${{ env.GCP_PROJECT }}
+
+    - name: Install Helm
+      run: |
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+
+    - name: Deploy helm chart to cluster
+      run: |
+        helm upgrade harvester ./helm-chart/harvester \
+        --atomic \
+        --cleanup-on-fail \
+        --install \
+        --namespace harvester \
+        --create-namespace \
+        --set harvester.harvest.secret=${{ secrets.HARVEST_SECRET }} \
+        --set image.tag=${{ env.RELEASE_TAG }}
+    needs: build
