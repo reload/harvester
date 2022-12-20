@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+  labels:
+    app: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+        image: {{ .Values.image }}:{{ .Values.image.tag }}
+        ports:
+        - containerPort: 80
+        env:
+          - name: HARVESTER_HARVEST_ACCOUNT
+            value: reload
+          - name: HARVESTER_HARVEST_USER
+            value: harvest@reload.dk
+          - name: HARVESTER_HARVEST_PASSWORD
+            value: {{ .Values.harvester.harvest.secret }}
+        volumeMounts:
+        - name: harvester-data
+          mountPath: /data
+      volumes:
+        # Data volume for the SQLite database file.
+        - name: harvester-data
+          persistentVolumeClaim:
+            claimName: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
