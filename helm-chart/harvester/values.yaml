@@ -1,6 +1,9 @@
 # The image tag is added in the github workflow based on which tag is pushed to main
 image: ghcr.io/reload/harvester
 
+# The tag example should be set during 'helm upgrade' operations with --set.
+#imageTag: latest
+
 ingress:
   host: harvester.reload.dk
   # enable prod and disable staging to issue REAL certs

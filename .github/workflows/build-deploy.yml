@@ -73,5 +73,5 @@ jobs:
         --namespace harvester \
         --create-namespace \
         --set harvester.harvest.secret=${{ secrets.HARVEST_SECRET }} \
-        --set image.tag=${{ env.RELEASE_TAG }}
+        --set imageTag=${{ env.RELEASE_TAG }}
     needs: build
