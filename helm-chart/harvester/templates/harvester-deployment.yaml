@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+  name: harvester
   labels:
-    app: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+    app: harvester
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+      app: harvester
   template:
     metadata:
       labels:
-        app: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+        app: harvester
     spec:
       containers:
-      - name: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+      - name: harvester
         image: {{ .Values.image }}:{{ .Values.imageTag }}
         ports:
         - containerPort: 80
