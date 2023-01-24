@@ -2,11 +2,14 @@
 # /usr/local/bin is not in the default path.
 PATH=/usr/bin:/bin:/usr/local/bin
 
-# Fetching data from HarvestAPI every hour.
-30 * * * * www-data /harvester/app/console 2>&1 harvester:fetch --updated-yesterday | logger -t harvester
+# Fetching data from HarvestAPI every 5 mins.
+*/5 * * * * www-data /harvester/app/console 2>&1 harvester:fetch --updated-yesterday | logger -t harvester
+
+# Fetching weekly data from HarvestAPI every hour.
+33 * * * * www-data /harvester/app/console 2>&1 harvester:fetch --updated-week | logger -t harvester
 
 # Set status to 0 of old entries that no longer exist in Harvest (been deleted).
-0 * * * * www-data /harvester/app/console 2>&1 harvester:fetch:cleanup --days=62 | logger -t harvester
+0 1 * * * www-data /harvester/app/console 2>&1 harvester:fetch:cleanup --days=62 | logger -t harvester
 
 # This will delete all records that's two months old and refill entries again.
 # This is done to get rid of entries that might have been deleted.
