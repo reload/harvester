@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
   labels:
-    app: {{ .Chart.Name }}-{{ .Release.Name }}-harvester
+    app: harvester
 spec:
   replicas: 1
   selector:
