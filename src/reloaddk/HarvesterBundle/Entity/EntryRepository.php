@@ -362,12 +362,16 @@ class EntryRepository extends EntityRepository
      *
      * @param $user_entries
      * @param int $workingdays_in_range
-     * @param float $user_working_hours
+     * @param float $user_working_hours_per_day
      * @param string $token
      * @return array
      */
-    public function parseUser(Array $user_entries, $workingdays_in_range, $user_working_hours = null, $token = null)
-    {
+    public function parseUser(
+        Array $user_entries,
+        $workingdays_in_range,
+        $user_working_hours_per_day = null,
+        $token = null
+    ) {
         $hours = $billable_hours = $education = $holiday = $vacation = $off_hours = 0;
         $illness['normal'] = $illness['child'] = 0;
         $time_off['normal'] = $time_off['paternity_leave'] = 0;
@@ -437,11 +441,11 @@ class EntryRepository extends EntityRepository
 
         // Get default working hours per day for the user.
         if ($entry_user->getWorkingHours() > 0) {
-            $user_working_hours = $entry_user->getWorkingHours();
+            $user_working_hours_per_day = $entry_user->getWorkingHours();
         }
 
         // Get the normed hours for this month.
-        $hours_goal = $workingdays_in_range * $user_working_hours;
+        $hours_goal = $workingdays_in_range * $user_working_hours_per_day;
 
         // Split user id, used for creating path to user avatar from Harvest!
         $user_id = str_pad($entry_user->getId(), 9, 0, STR_PAD_LEFT);
@@ -493,8 +497,18 @@ class EntryRepository extends EntityRepository
             }
 
             // Calculate normalized hours_pr_day
-            //'hours_pr_day_normalized' => round($billable_hours / $workingdays_in_range - ((hours_registered - working_hours) / user_working_hours), 2),
-            $hours_pr_day_normalized = ($billable_hours / ($workingdays_in_range - (($hours-$working_hours)/$user_working_hours)));
+            $total_excess_hours_in_range = $hours - $working_hours;
+            $excess_workings_days_in_range = $total_excess_hours_in_range / $user_working_hours_per_day;
+            $normalized_working_days_in_range = $workingdays_in_range - $excess_workings_days_in_range;
+            // Only try to calculate the normalized number of hours per day if there were actually any normalized
+            // working days in the range. If the user is on maternity leave or vacation for the entire range, there
+            // will be no normalized working days in that range, and we would get a division by zero error.
+            if ($normalized_working_days_in_range > 0) {
+                $billable_hours_per_day_normalized = $billable_hours / $normalized_working_days_in_range;
+                $hours_pr_day_normalized = $billable_hours_per_day_normalized;
+            } else {
+                $hours_pr_day_normalized = 0;
+            }
 
             // Extra information for admins and logged in users.
             $extra = array(
