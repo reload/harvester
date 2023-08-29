@@ -512,7 +512,7 @@ class EntryRepository extends EntityRepository
 
             // Extra information for admins and logged in users.
             $extra = array(
-                'billable_hours' => $billable_hours,
+                'billable_hours' => round($billable_hours, 2),
                 'billability' => array(
                     'of_total_hours' => $billability['raw'],
                     'of_working_hours' => $billability['calculated'],
@@ -524,7 +524,7 @@ class EntryRepository extends EntityRepository
                 'education' => $education,
                 'vacation' => $vacation,
                 'illness' => $illness,
-                'working_hours' => $working_hours,
+                'working_hours' => round($working_hours, 2),
                 'working_days' => $workingdays_in_range,
                 'off_hours' => $off_hours ? $off_hours : false,
             );
@@ -537,7 +537,7 @@ class EntryRepository extends EntityRepository
             'full_name' => $entry_user->getFirstName() . ' ' . $entry_user->getLastName(),
             'email' => $entry_user->getEmail(),
             'hours_goal' => $hours_goal,
-            'hours_registered' => $hours,
+            'hours_registered' => round($hours, 2),
             'extra' => $extra,
             'admin' => $admin,
         );
